@@ -1,5 +1,3 @@
-DEVKITARM = /c/devkitPro_/devkitARM
-
 PREFIX	=	$(DEVKITARM)/bin/arm-eabi-
 CC	=	$(PREFIX)gcc
 AS	=	$(PREFIX)as
