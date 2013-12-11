@@ -282,7 +282,7 @@ s32 LoadKernel( char *Kernel, u32 *KernelSize )
 		return cfd;
 	}
 
-	char Entry[0x1C];
+	char *Entry = (char*)memalign( 32, 0x1C );
 
 	for( u=0;; u+=0x1C )
 	{
@@ -298,7 +298,7 @@ s32 LoadKernel( char *Kernel, u32 *KernelSize )
 
 	IOS_Close( cfd );
 
-	char Path[128];
+	char *Path = (char*)memalign( 32, 128 );
 	sprintf( Path, "/shared1/%.8s.app", (char*)Entry );
 
 	gprintf("Kernel:\"%s\"\n", Path );
@@ -307,6 +307,9 @@ s32 LoadKernel( char *Kernel, u32 *KernelSize )
 	if( kfd < 0 )
 	{
 		gprintf("IOS_Open():%d\n", cfd );
+		
+		free(Path);
+		free(Entry);
 		return kfd;
 	}
 
@@ -318,11 +321,17 @@ s32 LoadKernel( char *Kernel, u32 *KernelSize )
 	if( IOS_Read( kfd, Kernel, *KernelSize ) != *KernelSize )
 	{
 		gprintf("IOS_Read() failed\n");
+
 		IOS_Close(kfd);
+		
+		free(Path);
+		free(Entry);
 		return -1;
 	}
 
 	IOS_Close(kfd);
-
+	
+	free(Path);
+	free(Entry);
 	return 0;
 }
