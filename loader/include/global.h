@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #endif
 
 #define VERSION				0x00000001
-#define DEBUG				1
+//#define DEBUG				1
 //#define DEBUG_PATCHES		1
 //#define DEBUG_MODULE_PATCH	1
 //#define EXIPATCH	1

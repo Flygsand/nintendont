@@ -635,7 +635,9 @@ void EXIUpdateRegistersNEW( void )
 					} break;
 					case EXI_DEV_SP1:
 					{
+#ifdef DEBUG
 						hexdump( ptr, len );
+#endif
 						EXIDeviceSP1( ptr, len, mode );
 					} break;
 					default:

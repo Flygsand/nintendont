@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 Nintendont (Kernel) - Playing Gamecubes in Wii mode on a Wii U
 
@@ -1511,7 +1511,7 @@ void DoPatches( char *Buffer, u32 Length, u32 Offset )
 						if( FPatterns[j].Patch == (u8*)DVDGetDriveStatus )
 						{
 							if( (read32(0) >> 8) != 0x474754 &&	// Chibi-Robo!
-								(read32(0) >> 8) != 0x475041 )	// Pok�mon Channel
+								(read32(0) >> 8) != 0x475041 )	// Pok駑on Channel
 								break;
 #ifdef DEBUG
 							dbgprintf("Patch:DVDGetDriveStatus\n");

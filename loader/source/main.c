@@ -214,13 +214,13 @@ int main(int argc, char **argv)
 			ConfigReset = 1;
 
 		if( ncfg.Version != NIN_CFG_VERSION )
-			ConfigReset = 1;		
+			ConfigReset = 1;
+
+		fclose(cfg);
 	}
 
 	if( ConfigReset )
 	{
-		cfg = fopen("/nincfg.bin","wb");
-
 		memset( &ncfg, 0, sizeof(NIN_CFG) );
 	
 		ncfg.Magicbytes	= 0x01070CF6;
@@ -233,7 +233,6 @@ int main(int argc, char **argv)
 	if( ncfg.Config & NIN_CFG_AUTO_BOOT )
 	{
 		gprintf("Autobooting:\"%s\"\n", ncfg.GamePath );
-		fclose( cfg );
 	} else {
 		SelectGame();
 	}
@@ -318,7 +317,9 @@ int main(int argc, char **argv)
 
 	if( ncfg.VideoMode & NIN_VID_FORCE )
 	{
+#ifdef DEBUG
 		gprintf("Force:%u (%02X)\n", ncfg.VideoMode & NIN_VID_FORCE, ncfg.VideoMode & NIN_VID_FORCE_MASK );
+#endif
 
 		switch( ncfg.VideoMode & NIN_VID_FORCE_MASK )
 		{
@@ -345,7 +346,9 @@ int main(int argc, char **argv)
 		}
 	}
 	
+#ifdef DEBUG
 	gprintf("Region:%u\n", Region );
+#endif
 
 	switch(Region)
 	{

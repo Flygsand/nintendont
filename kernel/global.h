@@ -3,7 +3,7 @@
 
 #define VERSION 0x00000001
 
-#define DEBUG		1
+//#define DEBUG		1
 #define false		0
 #define true		1
 //#define CHEATMENU	1
@@ -13,14 +13,11 @@
 //#define CARDDEBUG 1
 //#define AUDIOSTREAM 1
 
-//#define DEBUG_ES 1
-//#define DEBUG_HID 1
-//#define DEBUG_DI 1
-//#define DEBUG_SD 1
-#define DEBUG_EXI 1
-//#define DEBUG_JVSIO 1
-//#define DEBUG_GCAM 1
-//#define TRICARD 1
+//#define DEBUG_ES	1
+//#define DEBUG_HID	1
+//#define DEBUG_DI	1
+//#define DEBUG_SD	1
+//#define DEBUG_EXI	1
 
 
 #define UINT_MAX ((unsigned int)0xffffffff)
@@ -272,6 +269,5 @@ static inline u32 clear32(u32 addr, u32 clear)
 
 
 #define IsWiiU (( (*(u32*)0x0d8005A0 >> 16 ) == 0xCAFE )?1:0)
-//#define Shutdown ( IsWiiU?write32( 0x0D8005E0, 0xFFFFFFFE ):set32( HW_GPIO_OUT, GPIO_POWER ),set32( HW_GPIO_OUT, GPIO_POWER ) )
-//#define Shutdown ( dbgprintf("Zelda:Fail at :%s:%u\n",__FILE__,__LINE__))
+
 #endif

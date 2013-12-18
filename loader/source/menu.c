@@ -433,14 +433,17 @@ void SelectGame( void )
 	}
 
 	memcpy( ncfg.GamePath, gi[PosX+ScrollX].Path+3, strlen(gi[PosX+ScrollX].Path) );
+		
+	cfg = fopen("/nincfg.bin","wb");
+	if( cfg != NULL )
+	{
+		fwrite( &ncfg, sizeof(NIN_CFG), 1, cfg );
+		fclose( cfg );
+	}
 
 	for( i=0; i < gamecount; ++i )
 	{
 		free(gi[i].Name);
 		free(gi[i].Path);
 	}
-
-	fseek( cfg, 0, 0);
-	fwrite( &ncfg, sizeof(NIN_CFG), 1, cfg );
-	fclose( cfg );
 }

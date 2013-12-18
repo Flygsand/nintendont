@@ -154,8 +154,6 @@ u32 LoadGame( void )
 		counter++;
 	}
 	
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*14, "Loading complete\n");
-	
 	entrypoint = app_final();
 	
 #ifdef DEBUG
@@ -168,6 +166,8 @@ u32 LoadGame( void )
 		sleep(10);
 		exit(0);
 	}
+
+	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*14, "Loading complete\n");
 
 	return (u32)entrypoint;
 }
