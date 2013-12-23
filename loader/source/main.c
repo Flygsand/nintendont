@@ -279,14 +279,16 @@ int main(int argc, char **argv)
 	gprintf("ES_ImportBoot():");
 #endif			
 
-	u32 ret = IOS_IoctlvAsync( fd, 0x1F, 0, 0, (ioctlv*)buffer, NULL, NULL );
 	
 #ifdef DEBUG
+	u32 ret = IOS_IoctlvAsync( fd, 0x1F, 0, 0, (ioctlv*)buffer, NULL, NULL );
 	if( !IsWiiU() )
 	{
 		gprintf("%d\n", ret );
 		gprintf("Waiting ...\n");
 	}
+#else
+	IOS_IoctlvAsync( fd, 0x1F, 0, 0, (ioctlv*)buffer, NULL, NULL );
 #endif
 
 	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*10, "Loading patched kernel ...\n");
@@ -309,7 +311,7 @@ int main(int argc, char **argv)
 	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*11, "Nintendont kernel running, loading game ...\n");
 //	memcpy( (void*)0x80000000, (void*)0x90140000, 0x1200000 );
 
-	entrypoint = LoadGame();
+	entrypoint = (void*) LoadGame();
 
 #ifdef DEBUG
 	gprintf("GameRegion:");

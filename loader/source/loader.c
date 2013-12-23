@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <fat.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <ogc/cache.h>
 
 extern u32 Region;
@@ -39,7 +40,7 @@ int dummy( const char *str, ... )
 u32 LoadGame( void )
 {
 	void	(*app_init)(int (*report)(const char *fmt, ...));
-	int		(*app_main)(char **dst, int *size, int *offset);
+	int		(*app_main)(char **dst, u32 *size, u32 *offset);
 	void	(*app_entry)(int(**init)(const char *fmt, ...), int (**main)(), void *(**final)());
 	void	(*entrypoint)();
 	void *	(*app_final)();

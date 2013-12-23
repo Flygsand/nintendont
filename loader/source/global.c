@@ -39,12 +39,9 @@ u32 POffset;
 NIN_CFG ncfg;
 FILE *cfg;
 
-bool IsWiiU( void )
+inline bool IsWiiU( void )
 {
-	if( (*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE )
-		return 1;
-
-	return 0;
+	return ( (*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE );
 }
 void RAMInit( void )
 {
