@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "HID.h"
 #include "ff.h"
 
-struct SickSaxis PS3Controller = {0};
+struct SickSaxis PS3Controller = {{0}};
 
 static u8 ss_led_pattern[8] = {0x0, 0x02, 0x04, 0x08, 0x10, 0x12, 0x14, 0x18};
 
@@ -282,7 +282,6 @@ unsigned char rawData[49] =
 
 void HIDPS3SetLED( u8 led )
 {	
-	s32 ret;
 	memset32( req, 0, sizeof( req_args ) );
 	
 	char *buf = (char*)malloca( 64, 32 );
@@ -297,17 +296,17 @@ void HIDPS3SetLED( u8 led )
 	req->interrupt.endpoint		= 0x02;
 	req->data					= buf;
 
-	ret = IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
 #ifdef DEBUG_HID
-	if( ret < 0 )
-		dbgprintf("ES:IOS_Ioctl():%d\n", ret );
+	s32 ret = IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
+	if( ret < 0 ) dbgprintf("ES:IOS_Ioctl():%d\n", ret );
+#else
+	IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
 #endif
 	
 	free(buf);
 }
 void HIDPS3SetRumble( u8 duration_right, u8 power_right, u8 duration_left, u8 power_left)
 {	
-	s32 ret;
 	memset32( req, 0, sizeof( req_args ) );
 	
 	char *buf = (char*)malloca( 64, 32 );
@@ -323,10 +322,12 @@ void HIDPS3SetRumble( u8 duration_right, u8 power_right, u8 duration_left, u8 po
 	req->interrupt.endpoint		= 0x02;
 	req->data					= buf;
 
-	ret = IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
 #ifdef DEBUG_HID
+	s32 ret = IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
 	if( ret < 0 )
 		dbgprintf("ES:IOS_Ioctl():%d\n", ret );
+#else
+	IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
 #endif
 	
 	free(buf);
@@ -558,9 +559,11 @@ void getdev( struct SickSaxis *sicksaxis )
 	req->control.wLength		= sizeof(usb_devdesc);
 	req->data					= buf;
 
-	s32 ret = IOS_Ioctl( HIDHandle, /*ControlMessage*/2, req, 32, 0, 0 );
 #ifdef DEBUG_HID
+	s32 ret = IOS_Ioctl( HIDHandle, /*ControlMessage*/2, req, 32, 0, 0 );
 	dbgprintf("ES:IOS_Ioctl(%u):%d\n", sizeof(usb_devdesc), ret );
+#else
+	IOS_Ioctl( HIDHandle, /*ControlMessage*/2, req, 32, 0, 0 );
 #endif
 	
 //	hexdump( buf, 30 );

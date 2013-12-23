@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 #include "ES.h"
+#include "string.h"
 
 char *path		= (char*)NULL;
 u32 *size		= (u32*)NULL;
@@ -78,8 +79,8 @@ u32 ES_Init( u8 *MessageHeap )
 	SetUID( pid, 0 );
 	SetGID( pid, 0 );
 
-	u32 version = KernelGetVersion();
 #ifdef DEBUG_ES
+	u32 version = KernelGetVersion();
 	dbgprintf("ES:KernelVersion:%08X, %d\n", version, (version<<8)>>0x18 );
 #endif
 		
@@ -121,8 +122,8 @@ s32 ES_BootSystem( void )
 	KernelVersion|= IOSVersion<<16;
 	KernelSetVersion( KernelVersion );
 
-	u32 version = KernelGetVersion();
 #ifdef DEBUG_ES
+	u32 version = KernelGetVersion();
 	dbgprintf("ES:KernelVersion:%08X, %d\n", version, (version<<8)>>0x18 );
 #endif
 

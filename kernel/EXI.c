@@ -185,7 +185,7 @@ void EXIShutdown( void )
 u32 EXIDeviceMemoryCard( u8 *Data, u32 Length, u32 Mode )
 {
 	u32 EXIOK = 1;
-	u32 read = 0;
+	//u32 read = 0;
 
 	if( Mode == 1 )		// Write
 	{
@@ -518,8 +518,9 @@ u32 EXIDeviceSP1( u8 *Data, u32 Length, u32 Mode )
 }
 void EXIUpdateRegistersNEW( void )
 {
-	u32 i;
-
+	u32 chn, dev, frq, ret, data, len, mode;
+	u8 *ptr;
+	
 	u32 command = read32(0x0D80600C);
 	
 	if( command & 0xFF000000 )
@@ -528,14 +529,14 @@ void EXIUpdateRegistersNEW( void )
 		{
 			case 0x10:	// EXISelect
 			{
-				u32 chn	=  command & 0xFF;
-				u32 dev = (command>>8) & 0xFF;
-				u32 frq = (command>>16) & 0xFF;
+				chn	=  command & 0xFF;
+				dev = (command>>8) & 0xFF;
+				frq = (command>>16) & 0xFF;
 				
 #ifdef DEBUG_EXI
 			//	dbgprintf("EXISelect( %u, %u, %u )\n", chn, dev, frq );
 #endif
-				u32 ret = 1;
+				ret = 1;
 
 				switch( chn )
 				{
@@ -577,10 +578,10 @@ void EXIUpdateRegistersNEW( void )
 			} break;
 			case 0x11:	// EXI_Imm( s32 nChn, void *pData, u32 nLen, u32 nMode, EXICallback tc_cb );
 			{
-				u32 chn	=	(command >> 20) & 0xF;
-				u32 data=	read32(0x0D806010);
-				u32 len	=	command& 0xFFFF;
-				u32 mode=	(command >> 16) & 0xF;
+				chn	=	(command >> 20) & 0xF;
+				data=	read32(0x0D806010);
+				len	=	command& 0xFFFF;
+				mode=	(command >> 16) & 0xF;
 
 				if( len > 4 )
 				{
@@ -615,10 +616,10 @@ void EXIUpdateRegistersNEW( void )
 			} break;
 			case 0x12:	// EXIDMA
 			{
-				u32 chn	=	(command >> 20) & 0xF;
-				u8 *ptr=	(u8*)P2C(read32(0x0D806010));
-				u32 len	=	command& 0xFFFF;
-				u32 mode=	(command >> 16) & 0xF;
+				chn	=	(command >> 20) & 0xF;
+				ptr=	(u8*)P2C(read32(0x0D806010));
+				len	=	command& 0xFFFF;
+				mode=	(command >> 16) & 0xF;
 				
 #ifdef DEBUG_EXI
 		//		dbgprintf("EXIDMA( %u, %p, %u, %u )\n", chn, ptr, len, mode );
