@@ -6,6 +6,8 @@
 
 #include "string.h"
 
+extern int dbgprintf( const char *fmt, ...);
+
 size_t strnlen(const char *s, size_t count)
 {
 	const char *sc;

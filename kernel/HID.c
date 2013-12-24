@@ -21,6 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "HID.h"
 #include "ff.h"
 
+#ifndef DEBUG_HID
+#define dbgprintf(...)
+#else
+extern int dbgprintf( const char *fmt, ...);
+#endif
+
 struct SickSaxis PS3Controller = {{0}};
 
 static u8 ss_led_pattern[8] = {0x0, 0x02, 0x04, 0x08, 0x10, 0x12, 0x14, 0x18};
@@ -38,9 +44,7 @@ req_args *req = (req_args *)NULL;
 s32 HIDInit( void )
 {
 	s32 ret;
-#ifdef DEBUG_HID
 	dbgprintf("HIDInit()\n");
-#endif
 	HIDHandle = IOS_Open("/dev/usb/hid", 0 );
 
 	memset32( &PS3Controller, 0, sizeof( struct SickSaxis ) );
@@ -55,19 +59,15 @@ s32 HIDInit( void )
 	ret = IOS_Ioctl( HIDHandle, /*GetDeviceChange*/0, NULL, 0, HIDHeap, 0x600 );
 	if( ret < 0 )
 	{
-#ifdef DEBUG_HID
 		dbgprintf("HID:GetDeviceChange():%d\n", ret );
-#endif
 		return -1;
 	}
 
 	DeviceID	= *(vu32*)(HIDHeap+4);
 	HIDHandle	= HIDHandle;
 			
-#ifdef DEBUG_HID
 	dbgprintf("HID:DeviceID:%u\n", DeviceID );
 	dbgprintf("HID:VID:%04X PID:%04X\n", *(vu16*)(HIDHeap+0x10), *(vu16*)(HIDHeap+0x12) );
-#endif
 			
 	u32 Offset = 8;
 		
@@ -90,16 +90,12 @@ s32 HIDInit( void )
 	bEndpointAddress = *(vu8*)(HIDHeap+Offset+2);
 	wMaxPacketSize	 = *(vu16*)(HIDHeap+Offset+4);
 		
-#ifdef DEBUG_HID
 	dbgprintf("HID:bEndpointAddress:%02X\n", bEndpointAddress );
 	dbgprintf("HID:wMaxPacketSize  :%u\n", wMaxPacketSize );
-#endif
 
 	if( *(vu16*)(HIDHeap+0x10) == 0x054c && *(vu16*)(HIDHeap+0x12) == 0x0268 )
 	{
-#ifdef DEBUG_HID
 		dbgprintf("HID:PS3 Dualshock Controller detected\n");
-#endif
 		HIDPS3Init( &PS3Controller );
 
 		HIDPS3SetRumble( 0, 0, 0, 0 );
@@ -123,10 +119,8 @@ s32 HIDInit( void )
 
 		if( *(vu16*)(HIDHeap+0x10) != CTRL->VID || *(vu16*)(HIDHeap+0x12) != CTRL->PID )
 		{
-#ifdef DEBUG_HID
 			dbgprintf("HID:Config does not match device VID/PID\n");
 			dbgprintf("HID:Config VID:%04X PID:%04X\n", CTRL->VID, CTRL->PID );
-#endif
 			return -3;
 		}
 	
@@ -137,10 +131,8 @@ s32 HIDInit( void )
 		{
 			CTRL->MultiInValue= ConfigGetValue( Data, "MultiInValue", 0 );
 		
-#ifdef DEBUG_HID
 			dbgprintf("HID:MultIn:%u\n", CTRL->MultiIn );
 			dbgprintf("HID:MultiInValue:%u\n", CTRL->MultiInValue );
-#endif
 		}
 
 		if( Packet == (u8*)NULL )
@@ -151,18 +143,14 @@ s32 HIDInit( void )
 			} else if( CTRL->Polltype == 0 ) {
 				Packet = (u8*)malloc(128);
 			} else {
-#ifdef DEBUG_HID
 				dbgprintf("HID: %u is an invalid Polltype value\n", CTRL->Polltype );
-#endif
 				return -4;
 			}
 		}
 
 		if( CTRL->DPAD > 1 )
 		{
-#ifdef DEBUG_HID
 			dbgprintf("HID: %u is an invalid DPAD value\n", CTRL->DPAD );
-#endif
 			return -5;
 		}
 	
@@ -230,14 +218,10 @@ s32 HIDInit( void )
 		CTRL->LAnalog	= ConfigGetValue( Data, "LAnalog", 0 );
 		CTRL->RAnalog	= ConfigGetValue( Data, "RAnalog", 0 );
 		
-#ifdef DEBUG_HID
 		dbgprintf("HID:Config file for VID:%04X PID:%04X loaded\n", CTRL->VID, CTRL->PID );
-#endif
 
 	} else {
-#ifdef DEBUG_HID
 		dbgprintf("HID:Failed to open config file:%u\n", ret );
-#endif
 		free(HIDHeap);
 		return -2;
 	}
@@ -264,9 +248,7 @@ void HIDPS3Init(  struct SickSaxis *sicksaxis )
 	s32 ret = IOS_Ioctl( HIDHandle, /*ControlMessage*/2, req, 32, 0, 0 );
 	if( ret < 0 )
 	{
-#ifdef DEBUG_HID
 		dbgprintf("HID:HIDPS3Init:IOS_Ioctl( %u, %u, %p, %u, %u, %u):%d\n", HIDHandle, 2, req, 32, 0, 0, ret );
-#endif
 		Shutdown();
 	}
 
@@ -296,12 +278,8 @@ void HIDPS3SetLED( u8 led )
 	req->interrupt.endpoint		= 0x02;
 	req->data					= buf;
 
-#ifdef DEBUG_HID
 	s32 ret = IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
 	if( ret < 0 ) dbgprintf("ES:IOS_Ioctl():%d\n", ret );
-#else
-	IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
-#endif
 	
 	free(buf);
 }
@@ -322,13 +300,9 @@ void HIDPS3SetRumble( u8 duration_right, u8 power_right, u8 duration_left, u8 po
 	req->interrupt.endpoint		= 0x02;
 	req->data					= buf;
 
-#ifdef DEBUG_HID
 	s32 ret = IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
 	if( ret < 0 )
 		dbgprintf("ES:IOS_Ioctl():%d\n", ret );
-#else
-	IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/4, req, 32, 0, 0 );
-#endif
 	
 	free(buf);
 }
@@ -383,9 +357,7 @@ void HIDPS3Read( u8 *Data )
 	ret = IOS_Ioctl( HIDHandle, /*ControlMessage*/2, req, 32, 0, 0 );
 	if( ret < 0 )
 	{
-#ifdef DEBUG_HID
 		dbgprintf("HID:HIDPS3Read:IOS_Ioctl( %u, %u, %p, %u, %u, %u):%d\n", HIDHandle, 2, req, 32, 0, 0, ret );
-#endif
 		Shutdown();
 	}
 
@@ -412,9 +384,7 @@ void HIDIRQRead( u8 *Data )
 	ret = IOS_Ioctl( HIDHandle, /*InterruptMessageIN*/3, req, 32, 0, 0 );
 	if( ret < 0 )
 	{
-#ifdef DEBUG_HID
 		dbgprintf("ES:HIDIRQRead:IOS_Ioctl():%d\n", ret );
-#endif
 		Shutdown();
 	}
 
@@ -546,6 +516,7 @@ void HIDRumble( u32 Enable )
 }
 void getdev( struct SickSaxis *sicksaxis )
 {	
+	s32 ret;
 	memset32( req, 0, sizeof( req_args ) );
 	
 	char *buf = (char*)malloca( 32, 32 );
@@ -559,12 +530,8 @@ void getdev( struct SickSaxis *sicksaxis )
 	req->control.wLength		= sizeof(usb_devdesc);
 	req->data					= buf;
 
-#ifdef DEBUG_HID
-	s32 ret = IOS_Ioctl( HIDHandle, /*ControlMessage*/2, req, 32, 0, 0 );
-	dbgprintf("ES:IOS_Ioctl(%u):%d\n", sizeof(usb_devdesc), ret );
-#else
-	IOS_Ioctl( HIDHandle, /*ControlMessage*/2, req, 32, 0, 0 );
-#endif
+	ret = IOS_Ioctl( HIDHandle, /*ControlMessage*/2, req, 32, 0, 0 );
+	dbgprintf("ES:IOS_Ioctl(%u):%d\n", sizeof(usb_devdesc), ret);
 	
 //	hexdump( buf, 30 );
 	
@@ -578,9 +545,7 @@ u32 ConfigGetValue( char *Data, const char *EntryName, u32 Entry )
 	char *str = strstr( Data, entryname );
 	if( str == (char*)NULL )
 	{
-#ifdef DEBUG_HID
 		dbgprintf("Entry:\"%s\" not found!\n", EntryName );
-#endif
 		return 0;
 	}
 
@@ -595,9 +560,7 @@ u32 ConfigGetValue( char *Data, const char *EntryName, u32 Entry )
 		str = strstr( str, "," );
 		if( str == (char*)NULL )
 		{
-#ifdef DEBUG_HID
 			dbgprintf("No \",\" found in entry.\n");
-#endif
 			return 0;
 		}
 

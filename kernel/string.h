@@ -21,6 +21,11 @@ int sprintf(char *str, const char *fmt, ...);
 extern void memcpy( void *dst, const void *src, u32 size);
 
 int _sprintf( char *buf, const char *fmt, ... );
+
+#ifdef DEBUG
 void hexdump(void *d, int len);
+#else
+#define hexdump(...)
+#endif
 
 #endif

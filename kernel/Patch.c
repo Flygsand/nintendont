@@ -36,6 +36,8 @@ extern FIL GameFile;
 extern u32 TRIGame;
 extern u32 GameRegion;
 
+extern int dbgprintf( const char *fmt, ...);
+
 const unsigned char DSPHashes[][0x14] =
 {
 	{

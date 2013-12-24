@@ -55,6 +55,8 @@ extern u32 StreamTimer;
 extern vu32 SDisInit;
 extern u32 DiscChangeIRQ;
 
+extern int dbgprintf( const char *fmt, ...);
+
 FATFS *fatfs;
 
 u32 Loopmode=0;

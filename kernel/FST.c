@@ -24,6 +24,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "alloc.h"
 #include "vsprintf.h"
 
+#ifndef DEBUG_DI
+#define dbgprintf(...)
+#else
+extern int dbgprintf( const char *fmt, ...);
+#endif
+
 static u8 *FSTable ALIGNED(32);
 u32 ApploaderSize=0;
 u32 dolOffset=0;
@@ -46,9 +52,7 @@ u32 FSTInit( char *GamePath )
 	_sprintf( Path, "%ssys/boot.bin", GamePath );
 	if( f_open( &fd, Path, FA_READ ) != FR_OK )
 	{
-#ifdef DEBUG_DI
 		dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-#endif
 		return 0;
 
 	} else {
@@ -58,9 +62,7 @@ u32 FSTInit( char *GamePath )
 		f_lseek( &fd, 0 );
 		f_read( &fd, rbuf, 0x100, &read );
 
-#ifdef DEBUG_DI
 		dbgprintf("DIP:Loading game %.6s: %s\n", rbuf, (char *)(rbuf+0x20));
-#endif
 
 		//Read DOL/FST offset/sizes for later usage
 		f_lseek( &fd, 0x0420 );
@@ -72,11 +74,9 @@ u32 FSTInit( char *GamePath )
 
 		free( rbuf );
 		
-#ifdef DEBUG_DI
 		dbgprintf( "DIP:FSTableOffset:%08X\n", FSTableOffset );
 		dbgprintf( "DIP:FSTableSize:  %08X\n", FSTableSize );
 		dbgprintf( "DIP:DolOffset:    %08X\n", dolOffset );	
-#endif
 
 		FSTMode = 1;
 
@@ -219,9 +219,7 @@ void FSTRead( char *GamePath, char *Buffer, u32 Length, u32 Offset )
 		_sprintf( Path, "%ssys/fst.bin", GamePath );
 		if( f_open( &fd, Path, FA_READ ) != FR_OK )
 		{
-#ifdef DEBUG_DI
 			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-#endif
 			return;
 		} else {
 			//dbgprintf( "DIP:[fst.bin] Offset:%08X Size:%08X\n", Offset, Length );
@@ -245,9 +243,7 @@ void FSTRead( char *GamePath, char *Buffer, u32 Length, u32 Offset )
 		_sprintf( Path, "%ssys/main.dol", GamePath );
 		if( f_open( &fd, Path, FA_READ ) != FR_OK )
 		{
-#ifdef DEBUG_DI
 			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-#endif
 			return;
 		} else {
 			//dbgprintf( "DIP:[main.dol] Offset:%08X Size:%08X\n", Offset, Length );
@@ -266,9 +262,7 @@ void FSTRead( char *GamePath, char *Buffer, u32 Length, u32 Offset )
 		_sprintf( Path, "%ssys/apploader.img", GamePath );
 		if( f_open( &fd, Path, FA_READ ) != FR_OK )
 		{
-#ifdef DEBUG_DI
 			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-#endif
 			return;
 		} else {
 			//dbgprintf( "DIP:[apploader.img] Offset:%08X Size:%08X\n", Offset, Length );
@@ -287,9 +281,7 @@ void FSTRead( char *GamePath, char *Buffer, u32 Length, u32 Offset )
 		_sprintf( Path, "%ssys/bi2.bin", GamePath );
 		if( f_open( &fd, Path, FA_READ ) != FR_OK )
 		{
-#ifdef DEBUG_DI
 			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-#endif
 			return;
 		} else {
 			//dbgprintf( "DIP:[bi2.bin] Offset:%08X Size:%08X\n", Offset, Length );
@@ -308,9 +300,7 @@ void FSTRead( char *GamePath, char *Buffer, u32 Length, u32 Offset )
 		_sprintf( Path, "%ssys/boot.bin", GamePath );
 		if( f_open( &fd, Path, FA_READ ) != FR_OK )
 		{
-#ifdef DEBUG_DI
 			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-#endif
 			return;
 		} else {
 			//dbgprintf( "DIP:[boot.bin] Offset:%08X Size:%08X\n", Offset, Length );

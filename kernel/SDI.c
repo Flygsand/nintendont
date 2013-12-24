@@ -33,6 +33,12 @@
 #include "vsprintf.h"
 #include "alloc.h"
 
+#ifndef DEBUG_SD
+#define dbgprintf(...)
+#else
+extern int dbgprintf( const char *fmt, ...);
+#endif
+
 s32 SDHandle;
 u16 SDRCA;
 u8	SDCID[16];
@@ -255,9 +261,7 @@ s32 SDHCInit()
 	u32 status;
 	struct _sdioresponse resp;
 	
-#ifdef DEBUG_SD
 	dbgprintf("SDHCInit()\n");
-#endif
 
 	__sd0_rca = 0;
 	__sd0_initialized = 0;
@@ -270,16 +274,12 @@ s32 SDHCInit()
 	request = (struct _sdiorequest*)malloc( sizeof(struct _sdiorequest) );
 	response = (struct _sdioresponse*)malloc( sizeof(struct _sdioresponse) );
 	
-#ifdef DEBUG_SD
 	dbgprintf("SD:Heap:%X\n", rw_buffer );
-#endif
 
 	__sd0_fd = IOS_Open(_sd0_fs,1);
 	if ( __sd0_fd < 0 )
 	{
-#ifdef DEBUG_SD
 		dbgprintf("Failed to SD\n");
-#endif
 		return __sd0_fd;
 	}
 
@@ -388,9 +388,7 @@ s32 SDHCInit()
 	return true;
 
 fail:
-#ifdef DEBUG_SD
 	dbgprintf("SDInit failed\n");
-#endif
 	__sdio_sethcr(SDIOHCR_SOFTWARERESET, 1, 7);
 	__sdio_waithcr(SDIOHCR_SOFTWARERESET, 1, 1, 7);
 	IOS_Close(__sd0_fd);

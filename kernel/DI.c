@@ -32,6 +32,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "Patch.h"
 #include "FST.h"
 
+#ifndef DEBUG_DI
+#define dbgprintf(...)
+#else
+extern int dbgprintf( const char *fmt, ...);
+#endif
+
 u32	StreamBufferSize= 0x1E00000;
 u32 StreamBuffer	= 0x11200000+0x60;
 u32 Streaming		= 0;
@@ -54,9 +60,7 @@ void DIinit( void )
 {
 	u32 read;
 
-#ifdef DEBUG_DI
 	dbgprintf("DIInit()\n");
-#endif
 
 	s32 ret = f_open( &GameFile, ConfigGetGamePath(), FA_READ|FA_OPEN_EXISTING );
 	if( ret != FR_OK )
@@ -66,9 +70,7 @@ void DIinit( void )
 		//Try to switch to FST mode
 		if( !FSTInit(GamePath) )
 		{
-#ifdef DEBUG_DI
 			dbgprintf("Failed to open:%s Error:%u\n", ConfigGetGamePath(), ret );	
-#endif	
 			Shutdown();
 		}
 	} else {
@@ -87,16 +89,12 @@ void DIChangeDisc( u32 DiscNumber )
 
 	if( DiscNumber == 0 )
 	{
-#ifdef DEBUG_DI
 		dbgprintf("New Gamepath:\"%s\"\n", ConfigGetGamePath() );
-#endif
 
 		s32 ret = f_open( &GameFile, ConfigGetGamePath(), FA_READ|FA_OPEN_EXISTING );
 		if( ret  != FR_OK )
 		{
-#ifdef DEBUG_DI
 			dbgprintf("Failed to open:%s Error:%u\n", ConfigGetGamePath(), ret );	
-#endif	
 			Shutdown();
 		}
 
@@ -117,16 +115,12 @@ void DIChangeDisc( u32 DiscNumber )
 
 		_sprintf( str+i, "disc2.iso" );
 		
-#ifdef DEBUG_DI
 		dbgprintf("New Gamepath:\"%s\"\n", str );
-#endif
 		
 		s32 ret = f_open( &GameFile, str, FA_READ|FA_OPEN_EXISTING );
 		if( ret  != FR_OK )
 		{
-#ifdef DEBUG_DI
 			dbgprintf("Failed to open:%s Error:%u\n", str, ret );
-#endif	
 			Shutdown();
 		}
 
@@ -190,9 +184,7 @@ void DIUpdateRegisters( void )
 							if( read32(DI_SCMD_1) == 0 && read32(DI_SCMD_2) == 0 )
 							{	
 								StreamStopEnd = 1;						
-#ifdef DEBUG_DI
 								dbgprintf("DIP:DVDPrepareStreamAbsAsync( %08X, %08X )\n", read32(DI_SCMD_1), read32(DI_SCMD_2) );
-#endif
 							} else {
 
 								StreamDiscOffset= read32(DI_SCMD_1)<<2;
@@ -202,11 +194,9 @@ void DIUpdateRegisters( void )
 								StreamStopEnd	= 0;
 								StreamTimer		= read32(HW_TIMER);
 								
-#ifdef DEBUG_DI
 								dbgprintf("DIP:Streaming %ds of audio...\n", StreamSize / 32 * 28 / 48043 );
 								dbgprintf("DIP:Size:%u\n", StreamSize );
 								dbgprintf("DIP:Samples:%u\n", StreamSize / (SAMPLES_PER_BLOCK*sizeof(u16)) );
-#endif
 #ifdef AUDIOSTREAM
 								f_lseek( &GameFile, StreamDiscOffset );
 								ret = f_read( &GameFile, (void*)(StreamBuffer+0x1000), StreamSize, &read );
@@ -295,10 +285,8 @@ void DIUpdateRegisters( void )
 								sync_after_write( (void*)0, 0x20 );
 #endif
 								
-#ifdef DEBUG_DI
 								dbgprintf("DIP:Streaming %ds of audio...\n", StreamSize / 32 * 28 / 48043 );  
 								dbgprintf("DIP:DVDPrepareStreamAbsAsync( %08X, %08X )\n", StreamDiscOffset, StreamSize );
-#endif
 							}
 						} break;
 						case 0x01:
@@ -308,15 +296,11 @@ void DIUpdateRegisters( void )
 							StreamOffset	= 0;
 							Streaming		= 0;
 							
-#ifdef DEBUG_DI
 							dbgprintf("DIP:DVDCancelStreamAsync()\n");
-#endif
 						} break;
 						default:
 						{
-#ifdef DEBUG_DI
 							dbgprintf("DIP:DVDStream(%d)\n", (read32(DI_SCMD_0) >> 16 ) & 0xFF );
-#endif
 						} break;
 					} 
 					
@@ -333,9 +317,7 @@ void DIUpdateRegisters( void )
 						} break;
 						case 0x01000000:	// What is the current address?
 						{
-#ifdef DEBUG_DI
 							dbgprintf("DIP:StreamInfo:Cur:%08X End:%08X\n", StreamOffset, StreamSize );
-#endif
 							write32( DI_SIMM, ((StreamDiscOffset+StreamOffset) >> 2) & (~0x1FFF) );
 						} break;
 						case 0x02000000:	// disc offset of file
@@ -355,13 +337,9 @@ void DIUpdateRegisters( void )
 				} break;
 				case 0xE3:
 				{
-#ifdef DEBUG_DI
 					dbgprintf("DIP:DVDLowStopMotor()\n");
-#endif
 					u32 CDiscNumber = (read32(4) << 16 ) >> 24;
-#ifdef DEBUG_DI
 					dbgprintf("DIP:Current disc number:%u\n", CDiscNumber + 1 );
-#endif
 
 					DIChangeDisc( CDiscNumber ^ 1 );
 
@@ -398,9 +376,7 @@ void DIUpdateRegisters( void )
 										
 						if( ret != FR_OK )
 						{
-#ifdef DEBUG_DI
 							dbgprintf( "f_read failed(%u,%u):%d\n", Length, read, ret );
-#endif
 							Shutdown();
 						}
 					}

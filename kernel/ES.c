@@ -21,6 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "ES.h"
 #include "string.h"
 
+#ifndef DEBUG_ES
+#define dbgprintf(...)
+#else
+extern int dbgprintf( const char *fmt, ...);
+#endif
+
 char *path		= (char*)NULL;
 u32 *size		= (u32*)NULL;
 u64 *iTitleID	= (u64*)NULL;
@@ -52,6 +58,7 @@ u16 TitleVersion;
 u32 ES_Init( u8 *MessageHeap )
 {
 //Used in Ioctlvs
+	u32 version;
 	path		= (char*)malloca(		0x40,  32 );
 	size		= (u32*) malloca( sizeof(u32), 32 );
 	iTitleID	= (u64*) malloca( sizeof(u64), 32 );
@@ -79,16 +86,12 @@ u32 ES_Init( u8 *MessageHeap )
 	SetUID( pid, 0 );
 	SetGID( pid, 0 );
 
-#ifdef DEBUG_ES
-	u32 version = KernelGetVersion();
+	version = KernelGetVersion();
 	dbgprintf("ES:KernelVersion:%08X, %d\n", version, (version<<8)>>0x18 );
-#endif
 		
 	ES_BootSystem();
 	
-#ifdef DEBUG_ES
 	dbgprintf("ES:TitleID:%08x-%08x version:%d\n", (u32)((TitleID)>>32), (u32)(TitleID), TitleVersion );
-#endif
 		
 	return MessageQueue;
 }
@@ -97,12 +100,11 @@ s32 ES_BootSystem( void )
 {
 	char *path	= (char*)malloca( 0x40, 32 );
 	u32 *size	= (u32*)malloca( sizeof(u32), 32 );
+	u32 version;
 
 	u32 IOSVersion = 55;
 	
-#ifdef DEBUG_ES
 	dbgprintf("ES:Loading IOS%d ...\n", IOSVersion );
-#endif
 
 //Load TMD of the requested IOS and build KernelVersion
 	_sprintf( path, "/title/00000001/%08x/content/title.tmd", IOSVersion );
@@ -110,9 +112,7 @@ s32 ES_BootSystem( void )
 	TitleMetaData *TMD = (TitleMetaData *)NANDLoadFile( path, size );
 	if( TMD == NULL )
 	{
-#ifdef DEBUG_ES
 		dbgprintf("ES:Failed to open:\"%s\":%d\n", path, *size );
-#endif
 		free( path );
 		free( size );		
 		Shutdown();
@@ -122,17 +122,13 @@ s32 ES_BootSystem( void )
 	KernelVersion|= IOSVersion<<16;
 	KernelSetVersion( KernelVersion );
 
-#ifdef DEBUG_ES
-	u32 version = KernelGetVersion();
+	version = KernelGetVersion();
 	dbgprintf("ES:KernelVersion:%08X, %d\n", version, (version<<8)>>0x18 );
-#endif
 
 	free( TMD );
 
 	s32 r = LoadModules( IOSVersion );
-#ifdef DEBUG_ES
 	dbgprintf("ES:ES_LoadModules(%d):%d\n", IOSVersion, r );
-#endif
 	if( r < 0 )
 	{
 		Shutdown();
@@ -166,18 +162,14 @@ s32 LoadModules( u32 IOSVersion )
 
 	if( TMD->ContentCount == 3 )	// STUB detected!
 	{
-#ifdef DEBUG_ES
 		dbgprintf("ES:STUB IOS detected, falling back to IOS35\n");
-#endif
 		free( path );
 		free( KeyID );
 		free( size );
 		return LoadModules( 35 );
 	}
 	
-#ifdef DEBUG_ES
 	dbgprintf("ES:ContentCount:%d\n", TMD->ContentCount );
-#endif
 
 	for( i=0; i < TMD->ContentCount; ++i )
 	{
@@ -224,11 +216,9 @@ s32 LoadModules( u32 IOSVersion )
 
 			if( (s32)ID == ES_FATAL )
 			{
-#ifdef DEBUG_ES
 				dbgprintf("ES:Fatal error: required shared content not found!\n");
 				dbgprintf("Hash:\n");
 				hexdump( TMD->Contents[i].SHA1, 0x14 );
-#endif
 				Shutdown();
 
 			} else {
@@ -239,16 +229,12 @@ s32 LoadModules( u32 IOSVersion )
 			_sprintf( path, "/title/00000001/%08x/content/%08x.app", IOSVersion, TMD->Contents[i].ID );
 		}		
 		
-#ifdef DEBUG_ES
 		dbgprintf("ES:Loaded Module(%d):\"%s\"\n", i, path );
-#endif
 		r = LoadModule( path );
 		if( r < 0 )
 		{
-#ifdef DEBUG_ES
 			dbgprintf("ES:Fatal error: module failed to start!\n");
 			dbgprintf("ret:%d\n", r );
-#endif
 			Shutdown();
 		}
 	}
@@ -351,9 +337,7 @@ s32 GetUID( u64 *TitleID, u16 *UID )
 	if( uid == NULL )
 	{
 		free( path );
-#ifdef DEBUG_ES
 		dbgprintf("ES:ESP_GetUID():Could not open \"/sys/uid.sys\"! Error:%d\n", *size );
-#endif
 		return *size;		
 	}
 
@@ -390,9 +374,7 @@ s32 GetUID( u64 *TitleID, u16 *UID )
 
 		*UID = 0x1000+*size/12+1;
 		
-#ifdef DEBUG_ES
 		dbgprintf("ES:TitleID not found adding new UID:0x%04x\n", *UID );
-#endif
 
 		s32 r = IOS_Seek( fd, 0, SEEK_END );
 		if( r < 0 )
@@ -425,9 +407,7 @@ s32 ES_CheckSharedContent( void *ContentHash )
 {
 	if( *CNTMapDirty )
 	{
-#ifdef DEBUG_ES
 		dbgprintf("ES:Loading content.map...\n");
-#endif
 
 		if( CNTMap != NULL )
 		{
@@ -462,9 +442,7 @@ s32 GetSharedContentID( void *ContentHash )
 {
 	if( *CNTMapDirty )
 	{
-#ifdef DEBUG_ES
 		dbgprintf("ES:Loading content.map...\n");
-#endif
 
 		if( CNTMap != NULL )
 		{
