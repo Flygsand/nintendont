@@ -87,45 +87,46 @@ void DIChangeDisc( u32 DiscNumber )
 {
 	f_close( &GameFile );
 
+	u32 read, i;
+	char *str = (char*)malloca( 256, 32 );
+
+	memset32( str, 0, 256 );
+
+	_sprintf( str, "%s", ConfigGetGamePath() );
+			
+	//search the string backwards for '/'
+	for( i=strlen(str); i > 0; --i )
+		if( str[i] == '/' )
+			break;
+	i++;
+
 	if( DiscNumber == 0 )
-	{
-		dbgprintf("New Gamepath:\"%s\"\n", ConfigGetGamePath() );
-
-		s32 ret = f_open( &GameFile, ConfigGetGamePath(), FA_READ|FA_OPEN_EXISTING );
-		if( ret  != FR_OK )
-		{
-			dbgprintf("Failed to open:%s Error:%u\n", ConfigGetGamePath(), ret );	
-			Shutdown();
-		}
-
-	} else {
-
-		u32 i;
-		char *str = (char*)malloca( 256, 32 );
-
-		memset32( str, 0, 256 );
-
-		_sprintf( str, "%s", ConfigGetGamePath() );
-				
-		//search the string backwards for '/'
-		for( i=strlen(str); i > 0; --i )
-			if( str[i] == '/' )
-				break;
-		i++;
-
+		_sprintf( str+i, "game.iso" );
+	else
 		_sprintf( str+i, "disc2.iso" );
-		
-		dbgprintf("New Gamepath:\"%s\"\n", str );
-		
-		s32 ret = f_open( &GameFile, str, FA_READ|FA_OPEN_EXISTING );
-		if( ret  != FR_OK )
-		{
-			dbgprintf("Failed to open:%s Error:%u\n", str, ret );
-			Shutdown();
-		}
 
-		free(str);
+	dbgprintf("New Gamepath:\"%s\"\n", str );
+	
+	s32 ret = f_open( &GameFile, str, FA_READ|FA_OPEN_EXISTING );
+	if( ret  != FR_OK )
+	{
+		dbgprintf("Failed to open:%s Error:%u\n", str, ret );
+		Shutdown();
 	}
+
+	f_lseek( &GameFile, 0 );
+	f_read( &GameFile, (void*)0, 0x20, &read );
+
+	f_lseek( &GameFile, 0 );
+	f_read( &GameFile, str, 0x400, &read );
+
+	dbgprintf("DIP:Loading game %.6s: %s\n", str, (char *)(str+0x20));
+
+	f_lseek( &GameFile, 0x420 );
+	f_read( &GameFile, str, 0x40, &read );
+
+	free(str);
+
 }
 void DIUpdateRegisters( void )
 {
@@ -160,7 +161,7 @@ void DIUpdateRegisters( void )
 			{
 				default:
 				{
-					dbgprintf("DI: Unknown command:\n");
+					dbgprintf("DI: Unknown command:%02X\n", read32(DI_SCMD_0) >> 24 );
 					
 					for( i = 0; i < 0x30; i+=4 )
 						dbgprintf("0x%08X:0x%08X\t0x%08X\n", i, read32( DI_BASE + i ), read32( DI_SHADOW + i ) );
@@ -175,7 +176,7 @@ void DIUpdateRegisters( void )
 					Shutdown();
 
 				} break;
-				case 0xE1:
+				case 0xE1:	// play Audio Stream
 				{
 					switch( (read32(DI_SCMD_0) >> 16 ) & 0xFF )
 					{
@@ -307,7 +308,7 @@ void DIUpdateRegisters( void )
 					DIOK = 2;			
 
 				} break;
-				case 0xE2:
+				case 0xE2:	// request Audio Status
 				{
 					switch( read32(DI_SCMD_0)<<8 )
 					{
@@ -335,7 +336,7 @@ void DIUpdateRegisters( void )
 					DIOK = 2;		
 
 				} break;
-				case 0xE3:
+				case 0xE3:	// stop Motor
 				{
 					dbgprintf("DIP:DVDLowStopMotor()\n");
 					u32 CDiscNumber = (read32(4) << 16 ) >> 24;
@@ -349,6 +350,11 @@ void DIUpdateRegisters( void )
 
 					write32( HW_TIMER, 0 );
 
+				} break;
+				case 0xE4:	// DVD Audio disable
+				{
+					DIOK = 2;
+				
 				} break;
 				case 0xA7:
 				case 0xA9:

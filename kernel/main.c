@@ -207,10 +207,10 @@ int _main( int argc, char *argv[] )
 
 			set32( DI_SSTATUS, 0x3A );
 
-			write32( 0x0d80000C, (1<<0) | (1<<4) );
-			write32( HW_PPCIRQFLAG, read32(HW_PPCIRQFLAG) );
-			write32( HW_ARMIRQFLAG, read32(HW_ARMIRQFLAG) );
-			set32( 0x0d80000C, (1<<2) );	
+			write32( 0x0D806000, 0x3E );
+			write32( 0x0D806008, 0xE0000000 );
+			write32( 0x0D806020, 0 );
+			write32( 0x0D80601C, 1 );
 
 			DiscChangeIRQ = 0;
 		}

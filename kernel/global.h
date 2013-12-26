@@ -3,7 +3,7 @@
 
 #define VERSION 0x00000001
 
-//#define DEBUG		1
+#define DEBUG		1
 #define false		0
 #define true		1
 //#define CHEATMENU	1

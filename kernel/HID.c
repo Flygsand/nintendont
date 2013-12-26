@@ -125,6 +125,7 @@ s32 HIDInit( void )
 		}
 	
 		CTRL->DPAD		= ConfigGetValue( Data, "DPAD", 0 );
+		CTRL->DigitalLR	= ConfigGetValue( Data, "DigitalLR", 0 );
 		CTRL->Polltype	= ConfigGetValue( Data, "Polltype", 0 );
 		CTRL->MultiIn	= ConfigGetValue( Data, "MultiIn", 0 );
 		if( CTRL->MultiIn )
@@ -452,8 +453,18 @@ void HIDRead( void )
 	PAD->stickY		= Packet[CTRL->StickY];
 	PAD->substickX	= Packet[CTRL->CStickX];
 	PAD->substickY	= Packet[CTRL->CStickY];
-	PAD->triggerLeft= Packet[CTRL->LAnalog];
-	PAD->triggerRight= Packet[CTRL->RAnalog];
+
+	if( CTRL->DigitalLR )
+	{
+		if( Packet[CTRL->L.Offset] & CTRL->L.Mask )
+			PAD->triggerLeft = 255;
+			
+		if( Packet[CTRL->R.Offset] & CTRL->R.Mask )
+			PAD->triggerRight = 255;
+	} else {
+		PAD->triggerLeft	= Packet[CTRL->LAnalog];
+		PAD->triggerRight	= Packet[CTRL->RAnalog];
+	}
 
 	if( CTRL->DPAD == 0 )
 	{

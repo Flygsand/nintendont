@@ -20,6 +20,7 @@ typedef struct Controller
 	u32 PID;
 	u32 Polltype;
 	u32 DPAD;
+	u32 DigitalLR;
 	u32 MultiIn;
 	u32 MultiInValue;
 
