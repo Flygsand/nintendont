@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "global.h"
 #include <stdio.h>
 
+static FILE *nl_log = NULL;
 u32 GeckoFound = 0;
 void CheckForGecko( void )
 {
@@ -29,45 +30,7 @@ void CheckForGecko( void )
 		GeckoFound = usb_isgeckoalive( 1 );
 
 }
-int gprintf( const char *str, ... )
-{
-	if( IsWiiU() )
-	{
-		char astr[4096];
 
-		va_list ap;
-		va_start(ap,str);
-
-		vsprintf( astr, str, ap );
-
-		va_end(ap);
-
-		FILE *log = fopen("sd:/nloader.log", "a");
-		if( log != NULL )
-		{
-			fprintf( log, "%s", astr );
-			fclose( log );
-		}
-
-	} else {
-
-		if(!GeckoFound)
-			return 0;
-
-		char astr[4096];
-
-		va_list ap;
-		va_start(ap,str);
-
-		vsprintf( astr, str, ap );
-
-		va_end(ap);
-
-		gprint( astr );
-	}
-
-	return 1;
-}
 void EXISendByte( char byte )
 {
 
@@ -87,23 +50,44 @@ loop:
 
 	return;
 }
-void gprint( char *buffer )
+
+int gprintf( const char *str, ... )
 {
 	if( IsWiiU() )
 	{
-		FILE *log = fopen("sd:/nloader.log", "a");
-		if( log != NULL )
+		// We're running on a vWii, log the results to a file
+		
+		// Open the file if it hasn't been alread
+		if (nl_log == NULL) nl_log = fopen("sd:/nloader.log", "a");
+		if (nl_log != NULL)
 		{
-			fprintf( log, "%s", buffer );
-			fclose( log );
+			va_list ap;
+			va_start(ap,str);
+			vfprintf(nl_log, str, ap); // No need for a buffer, goes straight to the file
+			// Flushes the stream so we don't have to wait for the file to close or it to fill
+			fflush(nl_log);
+			va_end(ap);
+		} else {
+			return -1; // Couldn't open the file
 		}
 	} else {
+		// We're running on a real Wii, send the results to a USB Gecko
+		if(!GeckoFound)
+			return 0; // No USB Gecko found
+
+		char astr[4096] = {0};
+
+		va_list ap;
+		va_start(ap,str);
+		vsnprintf(astr, sizeof(astr), str, ap);
+		va_end(ap);
 		int i = 0;
-		while( buffer[i] != '\0' )
+		while( astr[i] != '\0' )
 		{
-			EXISendByte( buffer[i] );
+			EXISendByte( astr[i] );
 			++i;
 		}
 	}
-	return;
+
+	return 1; // Everything went okay
 }
