@@ -18,6 +18,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
+
+#ifndef __WII_FONT_H__
+#define __WII_FONT_H__
+
 #define WII_FONT_WIDTH   (16)
 #define WII_FONT_HEIGHT   (1520)
 #define WII_FONT_SIZE   (24320)
@@ -1547,3 +1551,4 @@ unsigned int WiiFont[] =
 };
 /* END OF FILE */
 
+#endif

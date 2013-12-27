@@ -1,6 +1,6 @@
 
-#ifndef __CFG__
-#define __CFG__
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
 #include "global.h"
 #include "string.h"

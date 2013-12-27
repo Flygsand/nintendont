@@ -2,7 +2,8 @@
 /* Integer type definitions for FatFs module */
 /*-------------------------------------------*/
 
-#ifndef _INTEGER
+#ifndef __INTEGER_H__
+#define __INTEGER_H__
 
 /* These types must be 16-bit, 32-bit or larger integer */
 typedef int		INT;
@@ -27,5 +28,4 @@ typedef unsigned long	DWORD;
 /* Boolean type */
 typedef enum { FALSE = 0, TRUE } BOOL;
 
-#define _INTEGER
 #endif

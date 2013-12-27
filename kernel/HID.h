@@ -1,5 +1,5 @@
-#ifndef __HID__
-#define __HID__
+#ifndef __HID_H__
+#define __HID_H__
 
 #include "global.h"
 #include "syscalls.h"

@@ -18,12 +18,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
-#include "exi.h"
 #include "global.h"
+#include "exi.h"
 #include <stdio.h>
 
 static FILE *nl_log = NULL;
-u32 GeckoFound = 0;
+static u32 GeckoFound = 0;
 void CheckForGecko( void )
 {
 	if( !IsWiiU() )

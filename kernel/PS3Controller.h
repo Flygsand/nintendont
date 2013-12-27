@@ -1,5 +1,5 @@
-#ifndef __PS3__
-#define __PS3__
+#ifndef __PS3CONTROLLER_H__
+#define __PS3CONTROLLER_H__
 
 #include "global.h"
 

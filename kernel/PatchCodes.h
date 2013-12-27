@@ -1,5 +1,5 @@
-#ifndef __PATCHCODES__
-#define __PATCHCODES__
+#ifndef __PATCHCODES_H__
+#define __PATCHCODES_H__
 
 #include "global.h"
 

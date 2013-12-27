@@ -15,7 +15,8 @@
 /----------------------------------------------------------------------------*/
 // original source: http://elm-chan.org/fsw/ff/00index_e.html
 
-#ifndef _DISKIO
+#ifndef __DISKIO_H__
+#define __DISKIO_H__
 
 #include "integer.h"
 
@@ -46,5 +47,4 @@ DRESULT disk_write (BYTE drv, const BYTE *buff, DWORD sector, BYTE count);
 #define STA_NODISK		0x02	/* No medium in the drive */
 #define STA_PROTECT		0x04	/* Write protected */
 
-#define _DISKIO
 #endif

@@ -18,8 +18,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
-#ifndef __GLOBAL__
-#define __GLOBAL__
+#ifndef __GLOBAL_H__
+#define __GLOBAL_H__
 
 #include <gctypes.h>
 
@@ -96,3 +96,4 @@ void *memalign( u32 Align, u32 Size );
 #endif
 
 // 78A94
+

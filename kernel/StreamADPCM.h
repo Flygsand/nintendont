@@ -17,8 +17,8 @@
 
 // Adapted from in_cube by hcs & destop
 
-#ifndef _STREAMADPCM_H
-#define _STREAMADPCM_H
+#ifndef __STREAMADPCM_H__
+#define __STREAMADPCM_H__
 
 #include "Global.h"
 

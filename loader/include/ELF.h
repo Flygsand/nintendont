@@ -1,3 +1,6 @@
+#ifndef __ELF_H__
+#define __ELF_H__
+
 #define EI_NIDENT        16
 
 typedef struct {
@@ -50,3 +53,5 @@ typedef struct {
 #define EI_VERSION	6
 #define EI_PAD		7
 #define EI_NIDENT	16	//size of ident
+
+#endif

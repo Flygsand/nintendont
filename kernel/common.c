@@ -5,6 +5,12 @@
 #include "EXI.h"
 #include "Config.h"
 
+#ifndef DEBUG
+#define dbgprintf(...)
+#else
+extern int dbgprintf( const char *fmt, ...);
+#endif
+
 void BootStatus( s32 Value )
 {
 	memset32( (void*)0x10004100, Value, 0x20 );

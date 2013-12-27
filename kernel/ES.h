@@ -1,5 +1,5 @@
-#ifndef __ESN__
-#define __ESN__
+#ifndef __ES_H__
+#define __ES_H__
 
 #include "syscalls.h"
 #include "ipc.h"

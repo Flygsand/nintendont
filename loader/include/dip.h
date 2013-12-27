@@ -18,6 +18,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
+
+#ifndef __DIP_H__
+#define __DIP_H__
+
 #include <gctypes.h>
 
 #define		DI_BASE		0xC0002F00
@@ -47,3 +51,5 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #define		DI_SCONFIG	(*(vu32*)(DI_SHADOW+0x24))
 
 int DVDLowRead( void *ptr, u32 len, u32 offset );
+
+#endif

@@ -1,5 +1,5 @@
-#ifndef _DOL_
-#define _DOL_
+#ifndef __DOL_H__
+#define __DOL_H__
 
 typedef struct {
 	unsigned int offsetText[7];

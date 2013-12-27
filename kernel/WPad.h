@@ -1,3 +1,6 @@
+#ifndef __WPAD_H__
+#define __WPAD_H__
+
 #define WPAD_BUTTON_LEFT              0x0001
 #define WPAD_BUTTON_RIGHT             0x0002
 #define WPAD_BUTTON_DOWN              0x0004
@@ -12,3 +15,5 @@
 #define WPAD_BUTTON_Z                 0x2000
 #define WPAD_BUTTON_C                 0x4000
 #define WPAD_BUTTON_HOME              0x8000
+
+#endif

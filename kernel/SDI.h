@@ -1,5 +1,5 @@
-#ifndef __SDI__
-#define __SDI__
+#ifndef __SDI_H__
+#define __SDI_H__
 
 #include "global.h"
 

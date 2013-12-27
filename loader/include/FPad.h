@@ -18,8 +18,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
-#ifndef _FPAD_
-#define _FPAD_
+#ifndef __FPAD_H__
+#define __FPAD_H__
 
 #include "global.h"
 #include <wiiuse\wpad.h>

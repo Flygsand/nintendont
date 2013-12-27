@@ -33,6 +33,9 @@
  *
  *	@(#)errno.h	8.5 (Berkeley) 1/21/94
  */
+ 
+#ifndef __ERRNO_H__
+#define __ERRNO_H__
 
 #define	EPERM		1		/* Operation not permitted */
 #define	ENOENT		2		/* No such file or directory */
@@ -169,4 +172,6 @@
 /* pseudo-errors returned inside kernel to modify return to process */
 #define	ERESTART	-1		/* restart syscall */
 #define	EJUSTRETURN	-2		/* don't modify regs, just return */
+#endif
+
 #endif

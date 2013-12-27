@@ -18,18 +18,19 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
+
+#ifndef __EXI_H_  // __EXI_H__ is defined in ogc/exi.h :(
+#define __EXI_H_
+
 #include <stdarg.h>
 #include <string.h>
 #include <ogc/usbgecko.h>
 
-#ifndef __EXI__
-#define __EXI__
 
 #define	EXI_BASE	0xCD006800
 #define EXI			0xCD006814
 
-void	CheckForGecko( void );
-void	gprint( char *buffer );
-int		gprintf( const char *str, ... );
+void CheckForGecko(void);
+int gprintf(const char *str, ...);
 
 #endif

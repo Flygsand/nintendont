@@ -1,5 +1,5 @@
-#ifndef __EXI__
-#define __EXI__
+#ifndef __EXI_H__
+#define __EXI_H__
 #include "global.h"
 
 #ifdef EXIPATCH

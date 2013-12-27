@@ -6,8 +6,8 @@
    [this avoids compiler-specific alignment pragmas etc.]
 */
 
-#ifndef __BMP_FILE_H_
-#define __BMP_FILE_H_
+#ifndef __BMP_FILE_H__
+#define __BMP_FILE_H__
  
 typedef struct  {
   unsigned char magic[2];

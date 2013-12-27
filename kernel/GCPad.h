@@ -1,3 +1,6 @@
+#ifndef __GCPAD_H__
+#define __GCPAD_H__
+
 typedef struct
 {
 	union
@@ -41,3 +44,5 @@ typedef struct
 		u32 Sticks;
 	};
 } GCPadStatus;
+
+#endif
