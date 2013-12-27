@@ -13,6 +13,12 @@
 #include "ff.h"
 #include "Config.h"
 
+static FIL dbgfile;
+static int file_opened = -1;
+vu32 SDisInit=0;
+
+extern int svc_write(char *buffer);
+
 static inline int isdigit(int c)
 {
 	return c >= '0' && c <= '9';
@@ -291,14 +297,13 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 	return str-buf;
 }
 
-vu32 SDisInit=0;
 int dbgprintf( const char *fmt, ...)
 {
 	va_list args;
 	int i;
 
 	if ( (*(vu32*)(0xd800070) & 1) == 0)
-		return 0;
+		return -1;
 	
 	char *buffer = (char*)heap_alloc_aligned( 0, 2048, 32 );	
 
@@ -309,15 +314,15 @@ int dbgprintf( const char *fmt, ...)
 	if( IsWiiU )
 	{
 		u32 read;	
-		FIL file;
-
 		if( SDisInit )
 		{
-			if( f_open( &file, "/ndebug.log", FA_OPEN_ALWAYS|FA_WRITE ) == FR_OK )
-			{
-				f_lseek( &file, file.fsize );
-				f_write( &file, buffer, strlen(buffer), &read );
-				f_close( &file );
+			if(file_opened != FR_OK)
+				file_opened = f_open(&dbgfile, "/ndebug.log", FA_OPEN_ALWAYS|FA_WRITE);
+				
+			if (file_opened == FR_OK) {
+				f_lseek(&dbgfile, dbgfile.fsize);
+				f_write(&dbgfile, buffer, strlen(buffer), &read);
+				f_sync(&dbgfile);
 			}
 		}
 

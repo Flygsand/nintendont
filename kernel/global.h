@@ -268,6 +268,6 @@ static inline u32 clear32(u32 addr, u32 clear)
 }
 
 
-#define IsWiiU (( (*(u32*)0x0d8005A0 >> 16 ) == 0xCAFE )?1:0)
+#define IsWiiU ( (*(u32*)0x0d8005A0 >> 16 ) == 0xCAFE )
 
 #endif
