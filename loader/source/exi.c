@@ -24,11 +24,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 static FILE *nl_log = NULL;
 static u32 GeckoFound = 0;
+
 void CheckForGecko( void )
 {
 	if( !IsWiiU() )
 		GeckoFound = usb_isgeckoalive( 1 );
-
 }
 
 void EXISendByte( char byte )

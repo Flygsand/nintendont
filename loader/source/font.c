@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "font.h"
 #include "wii-font.h"
 
-void PrintChar( int xx, int yy, char c )
+static void PrintChar( int xx, int yy, char c )
 {
 	unsigned long* fb = (unsigned long*)VIDEO_GetCurrentFramebuffer();
 
@@ -49,7 +49,8 @@ void PrintChar( int xx, int yy, char c )
 		}
 	}
 }
-void PrintString( int x, int y, char *str )
+
+static inline void PrintString( int x, int y, char *str )
 {
 	int i=0;
 	while(str[i]!='\0')
@@ -58,16 +59,15 @@ void PrintString( int x, int y, char *str )
 		i++;
 	}
 }
+
 void PrintFormat( int x, int y, const char *str, ... )
 {
-	char astr[2048];
-
-	memset( astr, 0, 2048 );
+	char astr[2048] = {0};
 
 	va_list ap;
 	va_start( ap, str );
 
-	vsprintf( astr, str, ap);
+	vsnprintf(astr, sizeof(astr), str, ap);
 
 	va_end( ap );
 

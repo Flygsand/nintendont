@@ -29,9 +29,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <unistd.h>
 #include <ogc/cache.h>
 
-extern u32 Region;
-extern u32 POffset;
-
 int dummy( const char *str, ... )
 {
 	return 0;
