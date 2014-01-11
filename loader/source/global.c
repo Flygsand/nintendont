@@ -29,7 +29,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <ogc/system.h>
 #include <ogc/audio.h>
 #include <ogc/dsp.h>
-#include <ogc/wiilaunch.h>
 #include <stdio.h>
 
 static GXRModeObj *rmode = NULL;
@@ -244,11 +243,30 @@ void *Initialise()
 }
 void LoadHBC( void )
 {
-	WII_LaunchTitle(0x000100014c554c5aLL); // HBC LULZ
-	WII_LaunchTitle(0x00010001af1bf516LL); // HBC v1.0.7-1.1.0
-	WII_LaunchTitle(0x000100014a4f4449LL); // HBC JODI
-	WII_LaunchTitle(0x0001000148415858LL); // HBC HAXX
-	VIDEO_SetBlack(FALSE);
+	u32 TicketViewCount;
+	u64 TitleID = 0x10001af1bf516LL;
+
+	s32 ret = ES_GetNumTicketViews( 0x0100014C554C5ALL, &TicketViewCount );
+	if( ret < 0 )
+	{
+		TitleID = 0x0100014C554C5ALL;
+		ret = ES_GetNumTicketViews( 0x0100014C554C5ALL, &TicketViewCount );
+		if( ret < 0 )
+		{
+			gprintf("ES_GetNumTicketViews():%d", ret );
+			return;
+		}
+	}
+
+	tikview *TicketViews = (tikview *)memalign( 32, TicketViewCount * 0x2A4 );
+
+	ret = ES_GetTicketViews( TitleID, TicketViews, TicketViewCount );
+	if( ret >= 0 )
+	{
+		ES_LaunchTitle( TitleID, TicketViews );
+	}
+	
+	gprintf("ES_GetTicketViews():%d", ret );
 }
 void ClearScreen()
 {

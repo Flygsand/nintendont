@@ -36,7 +36,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <ogc/system.h>
 #include <fat.h>
 
-
+extern NIN_CFG ncfg;
+extern FILE *cfg;
 
 u32 Shutdown = 0;
 void HandleWiiMoteEvent(s32 chan)
@@ -77,7 +78,7 @@ void SelectGame( void )
 	}
 
 	u32 gamecount = 0;
-	char buf[0x100] = {0};
+	char buf[0x100];
 	gameinfo gi[64];
 
 	memset( gi, 0, sizeof(gameinfo) * 64 );
@@ -190,7 +191,13 @@ void SelectGame( void )
 
 			ClearScreen();
 
-			PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader %s           A: Start Game", IsWiiU() ? "(Wii U)" : "(Wii)  " );
+			if( IsWiiU() )
+			{
+				PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (Wii U)         A: Start Game" );
+			} else {
+				PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (Wii)           A: Start Game" );
+			}
+
 			PrintFormat( MENU_POS_X, MENU_POS_Y + 20*2, "Built   : %s %s    B: Settings\n", __DATE__, __TIME__ );
 			PrintFormat( MENU_POS_X, MENU_POS_Y + 20*3, "Firmware: %d.%d.%d\n", *(vu16*)0x80003140, *(vu8*)0x80003142, *(vu8*)0x80003143 );
 		}
@@ -374,7 +381,7 @@ void SelectGame( void )
 				PrintFormat( MENU_POS_X+50, 164+16*0, "Cheats                 :%s", (ncfg.Config&NIN_CFG_CHEATS)		? "On " : "Off" );
 				PrintFormat( MENU_POS_X+50, 164+16*1, "Force Progressive      :%s", (ncfg.Config&NIN_CFG_FORCE_PROG)	? "On " : "Off" );
 				PrintFormat( MENU_POS_X+50, 164+16*2, "Force Widescreen       :%s", (ncfg.Config&NIN_CFG_FORCE_WIDE)	? "On " : "Off" );
-				PrintFormat( MENU_POS_X+50, 164+16*3, "Memcard Emulation      :%s", (ncfg.Config&NIN_CFG_MEMCARDEMU)	? "On " : "Off" );
+				PrintFormat( MENU_POS_X+50, 164+16*3, "Memcard Emulation      :%s", (ncfg.Config&NIN_CFG_MEMCARDEMU)		? "On " : "Off" );
 				PrintFormat( MENU_POS_X+50, 164+16*4, "Debugger          (NYI):%s", (ncfg.Config&NIN_CFG_DEBUGGER)		? "On " : "Off" );
 				PrintFormat( MENU_POS_X+50, 164+16*5, "Debugger Wait     (NYI):%s", (ncfg.Config&NIN_CFG_DEBUGWAIT)		? "On " : "Off" );
 				PrintFormat( MENU_POS_X+50, 164+16*6, "Use HID device         :%s", (ncfg.Config&NIN_CFG_HID)			? "On " : "Off" );
@@ -401,16 +408,16 @@ void SelectGame( void )
 				switch( ncfg.VideoMode & NIN_VID_FORCE_MASK )
 				{
 					case NIN_VID_FORCE_PAL50:
-						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :PAL50");
+						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :%s", "PAL50" );
 					break;
 					case NIN_VID_FORCE_PAL60:
-						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :PAL60");
+						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :%s", "PAL60" );
 					break;
 					case NIN_VID_FORCE_NTSC:
-						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :NTSC ");
+						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :%s", "NTSC " );
 					break;
 					case NIN_VID_FORCE_MPAL:
-						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :MPAL ");
+						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :%s", "MPAL " );
 					break;
 					default:
 						ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;

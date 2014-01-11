@@ -22,18 +22,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #define __GLOBAL_H__
 
 #include <gctypes.h>
-#include <stdio.h>
-#include "Config.h"
 
 #ifndef HW_RVL
 #define HW_RVL
 #endif
 
 #define VERSION				0x00000001
-//#define DEBUG
-//#define DEBUG_PATCHES
-//#define DEBUG_MODULE_PATCH
-//#define EXIPATCH
+//#define DEBUG				1
+//#define DEBUG_PATCHES		1
+//#define DEBUG_MODULE_PATCH	1
+//#define EXIPATCH	1
 //#define MEM1_THEFT 0x2000
 
 #define MENU_POS_X			10
@@ -41,11 +39,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #define		HW_REG_BASE		0xCD800000
 #define		HW_RESETS		(HW_REG_BASE + 0x194)
-
-extern u32 Region;
-extern u32 POffset;
-extern NIN_CFG ncfg;
-extern FILE *cfg;
 
 enum ContentType
 {
@@ -97,8 +90,7 @@ void *Initialise();
 void LoadHBC( void );
 void ClearScreen();
 void hexdump(void *d, int len);
-void *Initialise();
-void RAMInit( void );
+
 void *memalign( u32 Align, u32 Size );
 
 #endif

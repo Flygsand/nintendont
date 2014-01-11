@@ -51,23 +51,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "menu.h"
 #include "loader.h"
 #include "Patches.h"
+
 #include "kernel_bin.h"
 
-static GXRModeObj *vmode = NULL;
+extern void ClearBats();
 
-static const unsigned char Boot2Patch[] =
-{
-    0x48, 0x03, 0x49, 0x04, 0x47, 0x78, 0x46, 0xC0, 0xE6, 0x00, 0x08, 0x70, 0xE1, 0x2F, 0xFF, 0x1E, 
-    0x10, 0x10, 0x00, 0x00, 
-};
-static const unsigned char FSAccessPattern[] =
-{
-    0x9B, 0x05, 0x40, 0x03, 0x99, 0x05, 0x42, 0x8B, 
-};
-static const unsigned char FSAccessPatch[] =
-{
-    0x9B, 0x05, 0x40, 0x03, 0x1C, 0x0B, 0x42, 0x8B, 
-};
+extern NIN_CFG ncfg;
+extern FILE *cfg;
+extern GXRModeObj *rmode;
+
+void *Initialise();
+void RAMInit( void );
+void UpdateSRAM( int region );
+
+GXRModeObj *vmode = NULL;
+
+extern u32 Region;
 
 s32 __IOS_LoadStartupIOS(void)
 {
@@ -79,6 +78,20 @@ s32 __IOS_LoadStartupIOS(void)
 
 	return 0;
 }
+
+unsigned char Boot2Patch[20] =
+{
+    0x48, 0x03, 0x49, 0x04, 0x47, 0x78, 0x46, 0xC0, 0xE6, 0x00, 0x08, 0x70, 0xE1, 0x2F, 0xFF, 0x1E, 
+    0x10, 0x10, 0x00, 0x00, 
+};
+unsigned char FSAccessPattern[8] =
+{
+    0x9B, 0x05, 0x40, 0x03, 0x99, 0x05, 0x42, 0x8B, 
+} ;
+unsigned char FSAccessPatch[8] =
+{
+    0x9B, 0x05, 0x40, 0x03, 0x1C, 0x0B, 0x42, 0x8B, 
+};
 
 int main(int argc, char **argv)
 {	
@@ -101,7 +114,13 @@ int main(int argc, char **argv)
 
 	FPAD_Init();
 
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader %s         A: Start Game", IsWiiU() ? "(Wii U)" : "(Wii)  ");
+	if( IsWiiU() )
+	{
+		PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (Wii U)         A: Start Game" );
+	} else {
+		PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (Wii)           A: Start Game" );
+	}
+
 	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*2, "Built   : %s %s    B: Settings\n", __DATE__, __TIME__ );
 	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*3, "Firmware: %d.%d.%d\n", *(vu16*)0x80003140, *(vu8*)0x80003142, *(vu8*)0x80003143 );
 	
@@ -221,7 +240,13 @@ int main(int argc, char **argv)
 	ClearScreen();
 	
 
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (%s)", IsWiiU() ? "Wii U" : "Wii");
+	if( IsWiiU() )
+	{
+		PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (Wii U)" );
+	} else {
+		PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (Wii)" );
+	}
+
 	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*2, "Built   : %s %s\n", __DATE__, __TIME__ );
 	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*3, "Firmware: %d.%d.%d\n", *(vu16*)0x80003140, *(vu8*)0x80003142, *(vu8*)0x80003143 );
 	
@@ -234,19 +259,19 @@ int main(int argc, char **argv)
 	
 
 	DCInvalidateRange( (void*)0x939F02F0, 0x20 );
-
+			
 	memcpy( (void*)0x939F02F0, Boot2Patch, sizeof(Boot2Patch) );
 
 	DCFlushRange( (void*)0x939F02F0, 0x20 );
-
+			
 	s32 fd = IOS_Open( "/dev/es", 0 );
-
+				
 	u8 *buffer = (u8*)memalign( 32, 0x100 );
 	memset( buffer, 0, 0x100 );
-
+								
 	memset( (void*)0x90004100, 0xFFFFFFFF, 0x20  );
 	DCFlushRange( (void*)0x90004100, 0x20 );
-
+								
 	memset( (void*)0x91000000, 0xFFFFFFFF, 0x20  );
 	DCFlushRange( (void*)0x91000000, 0x20 );
 
