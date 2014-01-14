@@ -28,14 +28,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 void FPAD_Init( void );
 void FPAD_Update( void );
 
-bool FPAD_Up( u32 ILock );
-bool FPAD_Down( u32 ILock );
-bool FPAD_Left( u32 ILock );
-bool FPAD_Right( u32 ILock );
-bool FPAD_OK( u32 ILock );
-bool FPAD_Cancel( u32 ILock );
-bool FPAD_Start( u32 ILock );
+bool FPAD_Up( bool ILock );
+bool FPAD_Down( bool ILock );
+bool FPAD_Left( bool ILock );
+bool FPAD_Right( bool ILock );
+bool FPAD_OK( bool ILock );
+bool FPAD_Cancel( bool ILock );
+bool FPAD_Start( bool ILock );
 
-bool FPAD_X( u32 ILock );
+bool FPAD_X( bool ILock );
 
 #endif
