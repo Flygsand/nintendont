@@ -42,20 +42,11 @@ FIL GameFile;
 
 //#undef DEBUG
 
-extern u16 TitleVersion;
-extern u32 *KeyID;
-extern u8 *CNTMap;
-extern u32 *HCR;
-extern u32 *SDStatus;
-
-extern u32 Streaming;
-extern u32 StreamOffset;
-extern s32 StreamSize;
-extern u32 StreamTimer;
-extern vu32 SDisInit;
-extern u32 DiscChangeIRQ;
-
+#ifndef DEBUG
+#define dbgprintf(...)
+#else
 extern int dbgprintf( const char *fmt, ...);
+#endif
 
 FATFS *fatfs;
 
@@ -84,9 +75,7 @@ int _main( int argc, char *argv[] )
 	ret = SDHCInit();
 	if(!ret)
 	{
-#ifdef DEBUG
 		dbgprintf("SD:SDHCInit() failed:%d\n", ret );
-#endif
 		BootStatus(-1);
 		Shutdown();
 	}
@@ -98,9 +87,7 @@ int _main( int argc, char *argv[] )
 	s32 res = f_mount( 0, fatfs );
 	if( res != FR_OK )
 	{
-#ifdef DEBUG
 		dbgprintf("ES:f_mount() failed:%d\n", res );
-#endif	
 		BootStatus(-2);
 		Shutdown();
 	}
@@ -122,9 +109,7 @@ int _main( int argc, char *argv[] )
 	{
 		if( HIDInit() < 0 )
 		{
-#ifdef DEBUG
 			dbgprintf("ES:HIDInit() failed\n" );
-#endif
 			BootStatus(-3);
 			Shutdown();
 		}

@@ -18,12 +18,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
-#include <ogc\machine\processor.h>
-#include <ogc\cache.h>
-#include <ogc\video.h>
-#include <ogc\video_types.h>
-#include <ogc\es.h>
-#include <ogc\ipc.h>
+#include <ogc/machine/processor.h>
+#include <ogc/cache.h>
+#include <ogc/video.h>
+#include <ogc/video_types.h>
+#include <ogc/es.h>
+#include <ogc/ipc.h>
 #include <malloc.h>
 #include "Patches.h"
 #include "exi.h"

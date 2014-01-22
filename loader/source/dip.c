@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 #include "dip.h"
-#include "ogc\cache.h"
+#include "ogc/cache.h"
 #include <string.h>
 
 int DVDLowRead( void *ptr, u32 len, u32 offset )

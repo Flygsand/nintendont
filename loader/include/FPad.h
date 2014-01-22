@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #define __FPAD_H__
 
 #include "global.h"
-#include <wiiuse\wpad.h>
-#include <ogc\pad.h>
+#include <wiiuse/wpad.h>
+#include <ogc/pad.h>
 
 void FPAD_Init( void );
 void FPAD_Update( void );

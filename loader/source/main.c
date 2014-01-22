@@ -53,6 +53,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "Patches.h"
 #include "kernel_bin.h"
 
+extern void __exception_setreload(int t);
+
 static GXRModeObj *vmode = NULL;
 
 static const unsigned char Boot2Patch[] =
@@ -84,6 +86,8 @@ int main(int argc, char **argv)
 {	
 	void	(*entrypoint)();
 	
+	// Exit after 10 seconds if there is an error
+	__exception_setreload(10);
 	CheckForGecko();
 
 	if( !IsWiiU() )
