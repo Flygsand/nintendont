@@ -98,8 +98,10 @@ u32 ES_Init( u8 *MessageHeap )
 
 s32 ES_BootSystem( void )
 {
-	char *path	= (char*)malloca( 0x40, 32 );
-	u32 *size	= (u32*)malloca( sizeof(u32), 32 );
+	//char *path	= (char*)malloca( 0x40, 32 );
+	char path[0x40] ALIGNED(32);
+	//u32 *size	= (u32*)malloca( sizeof(u32), 32 );
+	u32 size[sizeof(u32)] ALIGNED(32);
 	u32 version;
 
 	u32 IOSVersion = 55;
@@ -112,9 +114,9 @@ s32 ES_BootSystem( void )
 	TitleMetaData *TMD = (TitleMetaData *)NANDLoadFile( path, size );
 	if( TMD == NULL )
 	{
-		dbgprintf("ES:Failed to open:\"%s\":%d\n", path, *size );
-		free( path );
-		free( size );		
+		dbgprintf("ES:Failed to open:\"%s\":%d\n", path, size );
+		//free( path );
+		//free( size );		
 		Shutdown();
 	}
 
@@ -134,8 +136,8 @@ s32 ES_BootSystem( void )
 		Shutdown();
 	}
 
-	free( path );
-	free( size );
+	//free( path );
+	//free( size );
 
 	return r;
 
@@ -144,7 +146,7 @@ s32 LoadModules( u32 IOSVersion )
 {
 	//used later for decrypted
 	KeyID = (u32*)malloca( sizeof(u32), 0x40 );
-	char *path = malloca( 0x70, 0x40 );
+	char path[0x70] ALIGNED(0x40);
 
 	s32 r=0;
 	int i;
@@ -152,20 +154,17 @@ s32 LoadModules( u32 IOSVersion )
 	//load TMD	
 	_sprintf( path, "/title/00000001/%08x/content/title.tmd", IOSVersion );
 
-	u32 *size = (u32*)malloca( sizeof(u32), 0x40 );
+	u32 size[sizeof(u32)] ALIGNED(0x40);
 	TitleMetaData *TMD = (TitleMetaData*)NANDLoadFile( path, size );
 	if( TMD == NULL )
 	{
-		free( path );
 		return *size;
 	}
 
 	if( TMD->ContentCount == 3 )	// STUB detected!
 	{
 		dbgprintf("ES:STUB IOS detected, falling back to IOS35\n");
-		free( path );
 		free( KeyID );
-		free( size );
 		return LoadModules( 35 );
 	}
 	
@@ -239,9 +238,7 @@ s32 LoadModules( u32 IOSVersion )
 		}
 	}
 
-	free( size );
 	free( TMD );
-	free( path );
 
 	thread_set_priority( 0, 0x50 );
 
@@ -306,16 +303,14 @@ void iGetTMDView( TitleMetaData *TMD, u8 *oTMDView )
 }
 s32 GetTMDView( u64 *TitleID, u8 *oTMDView )
 {
-	char *path	= (char*)malloca( 0x40, 32 );
-	u32 *size	= (u32*) malloca( 4, 32 );
+	char path[0x40] ALIGNED(32);
+	u32 size[4] ALIGNED(32);
 
 	_sprintf( path, "/title/%08x/%08x/content/title.tmd", (u32)(*TitleID>>32), (u32)*TitleID );
 
 	u8 *data = (u8*)NANDLoadFile( path, size );
 	if( data == NULL )
 	{
-		free( path );
-		free( size );
 		return ES_FATAL;
 	}
 
@@ -330,6 +325,8 @@ s32 GetUID( u64 *TitleID, u16 *UID )
 {
 	char *path	= (char*)malloca( 0x40, 32 );
 	u32  *size	= (u32*) malloca( sizeof(u32), 32 );
+	//char path[0x40] ALIGNED(32);
+	//u32 size[sizeof(u32)] ALIGNED(32);
 
 	_sprintf( path, "/sys/uid.sys");
 

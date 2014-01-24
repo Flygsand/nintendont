@@ -104,7 +104,8 @@ void Shutdown( void )
 void Asciify( char *str )
 {
 	int i=0;
-	for( i=0; i < strlen(str); i++ )
+	int length = strlen(str);
+	for( i=0; i < length; i++ )
 		if( str[i] < 0x20 || str[i] > 0x7F )
 			str[i] = '_';
 }

@@ -49,7 +49,7 @@ static u16 __sd0_rca;
 static s32 __sd0_initialized;
 static s32 __sd0_sdhc;
 //static u8 __sd0_csd[16];
-static u8 __sd0_cid[16];
+static u8 __sd0_cid[16] ALIGNED(32);
  
 static s32 __sdio_initialized;
 

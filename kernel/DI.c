@@ -51,7 +51,7 @@ u32 DiscChangeIRQ	= 0;
 
 FIL GameFile;
 
-static char GamePath[256];
+static char GamePath[256] ALIGNED(32);
 
 extern u32 Region;
 extern u32 FSTMode;
@@ -88,7 +88,8 @@ void DIChangeDisc( u32 DiscNumber )
 	f_close( &GameFile );
 
 	u32 read, i;
-	char *str = (char*)malloca( 256, 32 );
+	//char str[256] __attribute__((aligned(0x20)));
+	char str[256] ALIGNED(32);
 
 	memset32( str, 0, 256 );
 
