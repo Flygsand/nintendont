@@ -935,7 +935,7 @@ void DoPatches( char *Buffer, u32 Length, u32 Offset )
 
 							if( ConfigGetConfig( NIN_CFG_CHEATS ) )
 							{
-								char path[128] ALIGNED(32);
+								char *path = (char*)malloc( 128 );
 
 								if( ConfigGetConfig(NIN_CFG_CHEAT_PATH) )
 								{

@@ -96,7 +96,7 @@ u32 FSTInit( char *GamePath )
 }
 void FSTRead( char *GamePath, char *Buffer, u32 Length, u32 Offset )
 {
-	char Path[256] ALIGNED(32);
+	char Path[256];
 	FIL fd;
 	u32 read;
 	int i,j;
@@ -135,8 +135,8 @@ void FSTRead( char *GamePath, char *Buffer, u32 Length, u32 Offset )
 		char *NameOff = (char*)(FSTable + Entries * 0x0C);
 		FEntry *fe = (FEntry*)(FSTable);
 
-		u32 Entry[16] ALIGNED(32);
-		u32 LEntry[16] ALIGNED(32);
+		u32 Entry[16];
+		u32 LEntry[16];
 		u32 level=0;
 
 		for( i=1; i < Entries; ++i )

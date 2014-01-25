@@ -255,7 +255,7 @@ void HIDPS3Init(  struct SickSaxis *sicksaxis )
 
 	free(buf);
 }
-unsigned char rawData[] =
+unsigned char rawData[49] =
 {
     0x01, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xFF, 0x27, 0x10, 0x00, 0x32, 
     0xFF, 0x27, 0x10, 0x00, 0x32, 0xFF, 0x27, 0x10, 0x00, 0x32, 0xFF, 0x27, 0x10, 0x00, 0x32, 0x00, 
@@ -270,7 +270,7 @@ void HIDPS3SetLED( u8 led )
 	char *buf = (char*)malloca( 64, 32 );
 	memset32( buf, 0, 64 );
 
-	memcpy( buf, rawData, sizeof(rawData) );
+	memcpy( buf, rawData, 49 );
 
     buf[10] = ss_led_pattern[led];
 	
@@ -550,7 +550,7 @@ void getdev( struct SickSaxis *sicksaxis )
 }
 u32 ConfigGetValue( char *Data, const char *EntryName, u32 Entry )
 {
-	char entryname[128] ALIGNED(32);
+	char entryname[128];
 	_sprintf( entryname, "%s=", EntryName );
 
 	char *str = strstr( Data, entryname );

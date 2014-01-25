@@ -54,7 +54,7 @@ u32 Loopmode=0;
 int _main( int argc, char *argv[] )
 {
 	s32 ret=0;
-	u8 MessageHeap[0x10] ALIGNED(32);
+	u8 MessageHeap[0x10];
 	u32 MessageQueue=0xFFFFFFFF;
 
 	BootStatus(0);
