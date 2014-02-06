@@ -1,3 +1,7 @@
 *.elf
 *.dol
 *.bin
+*.o
+*.d
+*.map
+/loader/build
