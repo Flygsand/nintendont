@@ -2,13 +2,13 @@
 
 TCIntrruptHandler:
 
-	stw		%r0, 4(%sp)
-	
-	lis		%r8,	0xCD00
-	li		%r0,	0x34
-	stw		%r0,	4(%r8)
+  stw      %r0,       4(%sp)    
+          
+  lis      %r8,       0xCD00    
+  li       %r0,       0x34      
+  stw      %r0,       4(%r8)    
 
-	lis		%r8,	0xCD00
-	lis		%r0,	0x4000
-	stw		%r0,	0x30(%r8)
-	blr
+  lis      %r8,       0xCD00    
+  lis      %r0,       0x4000    
+  stw      %r0,       0x30(%r8) 
+  blr     

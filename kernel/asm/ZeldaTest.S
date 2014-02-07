@@ -3,5 +3,5 @@
 #
 
 ZeldaTest:
-	oris	%r3,	%r31,	0x2000
-	blr
+  oris     %r3,       %r31,      0x2000    
+  blr     

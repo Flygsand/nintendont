@@ -3,5 +3,5 @@
 
 AXSetVoiceAdr:
 
-	oris	%r31,	%r4,	0x2000
-	blr
+  oris     %r31,      %r4,       0x2000    
+  blr     

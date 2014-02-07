@@ -1,12 +1,12 @@
 #include <asm.h>
 
 #in
-#	r3	channel
+#  r3  channel
 
 #out
-#	r3 res 
+#  r3 res 
 
-EXILock:
+EXILock:  
 
-	li		%r3,	1
-	blr
+  li       %r3,       1         
+  blr     
