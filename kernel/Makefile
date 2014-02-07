@@ -1,4 +1,4 @@
-PREFIX = $(DEVKITARM)/bin/arm-eabi-
+PREFIX = $(DEVKITARM)/bin/arm-none-eabi-
 CC = $(PREFIX)gcc
 AS = $(PREFIX)as
 LD = $(PREFIX)gcc
