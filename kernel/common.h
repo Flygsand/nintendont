@@ -16,5 +16,6 @@ void Asciify( char *str );
 unsigned int atox( char *String );
 void Shutdown( void );
 void W32( u32 Address, u32 Data );
+u32 R32(u32 Address);
 
 #endif

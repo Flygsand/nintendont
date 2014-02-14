@@ -47,6 +47,25 @@ void W32( u32 Address, u32 Data )
 		write32( Address, Data );
 	}
 }
+u32 R32(u32 Address)
+{
+	u32 Data;
+	if (Address & 3)
+	{
+		u32 valA = read32(Address & (~3));
+		u32 valB = read32((Address + 3) & (~3));
+		
+		u32 Off = Address & 3;
+		
+		valA = valA << ((4 - Off) * 8);
+		valB = valB >> (Off * 8);
+		
+		Data = valA | valB;
+	} else {
+		Data = read32(Address);
+	}
+	return Data;
+}
 void udelay(int us)
 {
 	u8 heap[0x10];

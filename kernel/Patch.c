@@ -179,7 +179,7 @@ void PatchFuncAI( char *dst, u32 Length )
 	{
 		u32 op = read32( (u32)dst + i );
 				
-		if( (op & 0xFC00FFFF) == 0x3C00CC00 )	// lis rX, 0xCC00
+		if( (op & 0xFC1FFFFF) == 0x3C00CC00 )	// lis rX, 0xCC00
 		{
 			LISReg = (op & 0x3E00000) >> 21;
 			LISOff = (u32)dst + i;
@@ -187,8 +187,13 @@ void PatchFuncAI( char *dst, u32 Length )
 
 		if( (op & 0xFC000000) == 0x38000000 )	// li rX, x
 		{
-			LISReg = -1;
-			LISOff = (u32)dst + i;
+			u32 src = (op >> 16) & 0x1F;
+			u32 dst = (op >> 21) & 0x1F;
+			if ((src != LISReg) && (dst == LISReg))
+			{
+				LISReg = -1;
+				LISOff = (u32)dst + i;
+			}
 		}
 
 		if( (op & 0xFC00FF00) == 0x38006C00 )	// addi rX, rY, 0x6000
@@ -394,25 +399,28 @@ void SRAM_Checksum( unsigned short *buf, unsigned short *c1, unsigned short *c2)
 } 
 void DoDSPPatch( char *ptr, u32 Version )
 {
-	switch( Version )
+	u32 Tmp;// , SourceAddr, DestAddr;
+	switch (Version)
 	{
 		case 0: // Zelda:WW
 		{
-			// 5B3
-			W32( (u32)ptr + 0xB66 + 0, 0x02BF05F0 );  // call 0x05F0
-		
 			// 5F0 - before patch, part of halt routine
-			W32( (u32)ptr + 0xB66 + 0x7A, 0x02001000 ); // addi $AC0.M, 0x1000
-			W32( (u32)ptr + 0xB66 + 0x7E, 0x00FEFFD8 ); // original instruction at 0x5B3
-			W32( (u32)ptr + 0xB66 + 0x82, 0x02DF02DF ); // ret/ret
-
-			// 56C
-			W32( (u32)ptr + 0xAD8 + 0, 0x02BF05F8 ); // call 0x05F8
+			W32((u32)ptr + (0x05B3 + 0x3D) * 2, 0x02001000 ); // addi $AC0.M, 0x1000
+			Tmp = R32((u32)ptr + (0x05B3 + 0) * 2); // original instructions at 0x5B3
+			W32((u32)ptr + (0x05B3 + 0x3F) * 2, Tmp); // original instructions at 0x5B3
+			W32((u32)ptr + (0x05B3 + 0x41) * 2, 0x02DF02DF ); // ret/ret
 		
 			// 5F8 - before patch, part of halt routine
-			W32( (u32)ptr + 0xAD8 + 0x118, 0x02001000 ); // addi $AC0.M, 0x1000
-			W32( (u32)ptr + 0xAD8 + 0x11C, 0x147F2ED8 ); // original instructions at 0x56C
-			W32( (u32)ptr + 0xAD8 + 0x120, 0x02DF02DF ); // ret/ret
+			W32((u32)ptr + (0x056C + 0x8C) * 2, 0x02001000 ); // addi $AC0.M, 0x1000
+			Tmp = R32((u32)ptr + (0x056C + 0) * 2); // original instructions at 0x56C
+			W32((u32)ptr + (0x056C + 0x8E) * 2, Tmp); // original instructions at 0x56C
+			W32( (u32)ptr + (0x056C + 0x90) * 2, 0x02DF02DF ); // ret/ret
+
+			// 5B3
+			W32((u32)ptr + (0x05B3 + 0) * 2, 0x02BF05F0);  // call 0x05F0
+
+			// 56C
+			W32((u32)ptr + (0x056C + 0) * 2, 0x02BF05F8); // call 0x05F8
 		} break;
 		/*
 			0x5c8 - 15 opcodes
@@ -484,36 +492,53 @@ void DoDSPPatch( char *ptr, u32 Version )
 			W32( (u32)ptr + 0xBE0 +12, 0xFFD902DF );
 
 		} break;
+		case 8:			//	Donkey Kong Jungle Beat
+		{
+			// 6DD - before patch, part of halt routine
+			W32((u32)ptr + (0x06A0 + 0x3D) * 2, 0x02001000 ); // addi $AC0.M, 0x1000
+			Tmp = R32((u32)ptr + (0x06A0 + 0) * 2); // original instructions at 0x5B3
+			W32((u32)ptr + (0x06A0 + 0x3F) * 2, Tmp); // original instructions at 0x5B3
+			W32((u32)ptr + (0x06A0 + 0x41) * 2, 0x02DF02DF ); // ret/ret
+		
+			// 6E5 - before patch, part of halt routine
+			W32((u32)ptr + (0x0659 + 0x8C) * 2, 0x02001000 ); // addi $AC0.M, 0x1000
+			Tmp = R32((u32)ptr + (0x0659 + 0) * 2); // original instructions at 0x56C
+			W32((u32)ptr + (0x0659 + 0x8E) * 2, Tmp); // original instructions at 0x56C
+			W32( (u32)ptr + (0x0659 + 0x90) * 2, 0x02DF02DF ); // ret/ret
+
+			// 6A0
+			W32((u32)ptr + (0x06A0 + 0) * 2, 0x02BF06DD);  // call 0x06DD
+
+			// 659
+			W32((u32)ptr + (0x0659 + 0) * 2, 0x02BF06E5); // call 0x06E5
+		} break;
 		case 10:		// Animal Crossing
 		{
+			// CF4 - unused
+			W32((u32)ptr + (0x0CF4 + 0) * 2, 0x02601000); // ori $AC0.M, 0x1000
+			Tmp = R32((u32)ptr + (0x00C0 + 0) * 2); // original instructions at 0x0C0/0x10B
+			W32((u32)ptr + (0x0CF4 + 2) * 2, Tmp); // original instructions at 0x0C0/0x10B
+			W32((u32)ptr + (0x0CF4 + 4) * 2, 0x02DF0000); // ret/nop
+
 			// 0C0
-			W32((u32)ptr + 0x180 + 0, 0x02BF0CF4); // call 0x0CF4
+			W32((u32)ptr + (0x00C0 + 0) * 2, 0x02BF0CF4); // call 0x0CF4
 
 			// 10B
-			W32((u32)ptr + 0x216 - 2, 0x1F7F02BF); // unchanged/call
-			W32((u32)ptr + 0x216 + 2, 0x0CF40200); // 0x0CF4/unchanged
-			//W32((u32)ptr + 0x216 + 0, 0x02BF0CF4); // call 0x0CF4
-
-			// CF4 - unused
-			W32((u32)ptr + 0x19E8 + 0, 0x02601000); // ori $AC0.M, 0x1000
-			W32((u32)ptr + 0x19E8 + 4, 0x1F5E1F1C); // original instructions at 0x0C0/0x10B
-			W32((u32)ptr + 0x19E8 + 8, 0x02DF0000); // ret/nop
-
+			W32((u32)ptr + (0x010B + 0) * 2, 0x02BF0CF4); // call 0x0CF4
 		} break;
 		case 11:		// Luigi
 		{
+			// BE8 - unused
+			W32((u32)ptr + (0x0BE8 + 0) * 2, 0x02601000); // ori $AC0.M, 0x1000
+			Tmp = R32((u32)ptr + (0x00BE + 0) * 2); // original instructions at 0x0BE/0x109
+			W32((u32)ptr + (0x0BE8 + 2) * 2, Tmp); // original instructions at 0x0BE/0x109
+			W32((u32)ptr + (0x0BE8 + 4) * 2, 0x02DF0000); // ret/nop
+
 			// 0BE
-			W32((u32)ptr + 0x17C + 0, 0x02BF0BE8); // call 0x0BE8
+			W32((u32)ptr + (0x00BE + 0) * 2, 0x02BF0BE8); // call 0x0BE8
 
 			// 109
-			W32((u32)ptr + 0x212 - 2, 0x1F7F02BF); // unchanged/call
-			W32((u32)ptr + 0x212 + 2, 0x0BE80200); // 0x0BE8/unchanged
-			//W32((u32)ptr + 0x212 + 0, 0x02BF0E8); // call 0x0BE8
-
-			// BE8 - unused
-			W32((u32)ptr + 0x17D0 + 0, 0x02601000); // ori $AC0.M, 0x1000
-			W32((u32)ptr + 0x17D0 + 4, 0x1F5E1F1C); // original instructions at 0x0C0/0x10B
-			W32((u32)ptr + 0x17D0 + 8, 0x02DF0000); // ret/nop
+			W32((u32)ptr + (0x0109 + 0) * 2, 0x02BF0E8); // call 0x0BE8
 
 		} break;
 

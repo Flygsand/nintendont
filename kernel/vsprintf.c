@@ -311,24 +311,21 @@ int dbgprintf( const char *fmt, ...)
 	i = vsprintf(buffer, fmt, args);
 	va_end(args);
 
-	if( IsWiiU )
+	u32 read;	
+	if( SDisInit )
 	{
-		u32 read;	
-		if( SDisInit )
-		{
-			if(file_opened != FR_OK)
-				file_opened = f_open(&dbgfile, "/ndebug.log", FA_OPEN_ALWAYS|FA_WRITE);
-				
-			if (file_opened == FR_OK) {
-				f_lseek(&dbgfile, dbgfile.fsize);
-				f_write(&dbgfile, buffer, strlen(buffer), &read);
-				f_sync(&dbgfile);
-			}
+		if(file_opened != FR_OK)
+			file_opened = f_open(&dbgfile, "/ndebug.log", FA_OPEN_ALWAYS|FA_WRITE);
+			
+		if (file_opened == FR_OK) {
+			f_lseek(&dbgfile, dbgfile.fsize);
+			f_write(&dbgfile, buffer, strlen(buffer), &read);
+			f_sync(&dbgfile);
 		}
-
-	} else {
-		svc_write(buffer);
 	}
+
+	//if( !IsWiiU ) // usbgecko?
+	//	svc_write(buffer);
 
 	heap_free( 0, buffer );
 
