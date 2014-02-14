@@ -538,7 +538,7 @@ void DoDSPPatch( char *ptr, u32 Version )
 			W32((u32)ptr + (0x00BE + 0) * 2, 0x02BF0BE8); // call 0x0BE8
 
 			// 109
-			W32((u32)ptr + (0x0109 + 0) * 2, 0x02BF0E8); // call 0x0BE8
+			W32((u32)ptr + (0x0109 + 0) * 2, 0x02BF0BE8); // call 0x0BE8
 
 		} break;
 
