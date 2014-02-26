@@ -98,8 +98,7 @@ u32 ES_Init( u8 *MessageHeap )
 
 s32 ES_BootSystem( void )
 {
-	//char *path	= (char*)malloca( 0x40, 32 );
-	char path[0x40] ALIGNED(32);
+	char *path	= (char*)malloca( 0x40, 32 );
 	u32 *size	= (u32*)malloca( sizeof(u32), 32 );
 	u32 version;
 
@@ -307,10 +306,8 @@ void iGetTMDView( TitleMetaData *TMD, u8 *oTMDView )
 }
 s32 GetTMDView( u64 *TitleID, u8 *oTMDView )
 {
-	//char *path	= (char*)malloca( 0x40, 32 );
-	//u32 *size	= (u32*) malloca( 4, 32 );
-	char path[0x40] ALIGNED(32);
-	u32 size[4] ALIGNED(32);
+	char *path	= (char*)malloca( 0x40, 32 );
+	u32 *size	= (u32*) malloca( 4, 32 );
 
 	_sprintf( path, "/title/%08x/%08x/content/title.tmd", (u32)(*TitleID>>32), (u32)*TitleID );
 

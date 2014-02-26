@@ -97,8 +97,6 @@ void *Initialise();
 void LoadHBC( void );
 void ClearScreen();
 void hexdump(void *d, int len);
-void *Initialise();
-void RAMInit( void );
 void *memalign( u32 Align, u32 Size );
 
 #endif

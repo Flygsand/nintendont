@@ -88,8 +88,7 @@ void DIChangeDisc( u32 DiscNumber )
 	f_close( &GameFile );
 
 	u32 read, i;
-	//char str[256] __attribute__((aligned(0x20)));
-	char str[256] ALIGNED(32);
+	char str[256] __attribute__((aligned(0x20)));
 
 	memset32( str, 0, 256 );
 

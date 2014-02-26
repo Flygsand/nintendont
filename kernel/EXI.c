@@ -82,9 +82,9 @@ void EXIInit( void )
 #ifdef DEBUG
 			dbgprintf("EXI: Creating new memory card...");
 #endif
-			memset32( (void*)0x10800000, 0, 16*1024*1024 );
+			memset32( (void*)0x11000000, 0, 16*1024*1024 );
 
-			f_write( &MemCard, (void*)0x10800000, 16*1024*1024, &wrote );
+			f_write( &MemCard, (void*)0x11000000, 16*1024*1024, &wrote );
 
 			f_sync( &MemCard );
 		
