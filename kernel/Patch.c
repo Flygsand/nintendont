@@ -839,13 +839,16 @@ void DoPatches( char *Buffer, u32 Length, u32 Offset )
 			) 
 		{
 			u32 Offset = (u32)Buffer + i - 8;
-			
+			u32 HwOffset = Offset;
+			if ((read32(Offset + 4) & 0xFFFF) == 0xCC00)	// Loader
+				HwOffset = Offset + 4;
+
 #ifdef DEBUG
-			dbgprintf("Patch:Found [__DVDIntrruptHandler]: 0x%08X\n", Offset );
+			dbgprintf("Patch:Found [__DVDIntrruptHandler]: 0x%08X (0x%08X)\n", Offset, HwOffset );
 #endif
 			POffset -= sizeof(DCInvalidateRange);
 			memcpy( (void*)(POffset), DCInvalidateRange, sizeof(DCInvalidateRange) );
-			PatchBL( POffset, (u32)Offset );
+			PatchBL(POffset, (u32)HwOffset);
 							
 			Offset += 92;
 						
@@ -936,6 +939,12 @@ void DoPatches( char *Buffer, u32 Length, u32 Offset )
 					write32( (u32)Buffer + i + 0x10, 0x3800009C );
 #ifdef DEBUG
 					dbgprintf( "Patch:[ARInit] 0x%08X\n", (u32)(Buffer+i) );
+#endif
+				}
+				else
+				{
+#ifdef DEBUG
+					dbgprintf("Patch skipped:[ARInit] 0x%08X\n", (u32)(Buffer + i));
 #endif
 				}
 
