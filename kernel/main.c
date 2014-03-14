@@ -1,23 +1,23 @@
 /*
-
-Nintendont (Kernel) - Playing Gamecubes in Wii mode on a Wii U
-
-Copyright (C) 2013  crediar
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation version 2.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-*/
+ *
+ * Nintendont (Kernel) - Playing Gamecubes in Wii mode on a Wii U
+ *
+ * Copyright (C) 2013  crediar
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation version 2.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
 #include "string.h"
 #include "syscalls.h"
 #include "global.h"
@@ -32,180 +32,172 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "SDI.h"
 
 int verbose = 0;
-u32 base_offset=0;
-void *queuespace=NULL;
+u32 base_offset = 0;
+void *queuespace = NULL;
 int queueid = 0;
-int heapid=0;
-int FFSHandle=0;
-u32 FSUSB=0;
+int heapid = 0;
+int FFSHandle = 0;
+u32 FSUSB = 0;
 FIL GameFile;
 
-//#undef DEBUG
+// #undef DEBUG
 
 #ifndef DEBUG
 #define dbgprintf(...)
 #else
-extern int dbgprintf( const char *fmt, ...);
+extern int dbgprintf(const char *fmt, ...);
 #endif
 
 FATFS *fatfs;
 
-u32 Loopmode=0;
-int _main( int argc, char *argv[] )
+u32 Loopmode = 0;
+int _main(int argc, char *argv[])
 {
-	s32 ret=0;
-	u8 MessageHeap[0x10];
-	u32 MessageQueue=0xFFFFFFFF;
+    s32 ret = 0;
+    u8 MessageHeap[0x10];
+    u32 MessageQueue = 0xFFFFFFFF;
 
-	BootStatus(0);
+    BootStatus(0);
 
-	thread_set_priority( 0, 0x79 );	// do not remove this, this waits for FS to be ready!
-	thread_set_priority( 0, 0x50 );
-	thread_set_priority( 0, 0x79 );
-	
-	dbgprintf("Nintendont\n");
+    thread_set_priority(0, 0x79);   // do not remove this, this waits for FS to be ready!
+    thread_set_priority(0, 0x50);
+    thread_set_priority(0, 0x79);
 
-	dbgprintf("Built   : %s %s\n", __DATE__, __TIME__ );
-	dbgprintf("Version : %d.%d\n", VERSION>>16, VERSION&0xFFFF );	
+    dbgprintf("Nintendont\n");
 
-	MessageQueue = ES_Init( MessageHeap );
+    dbgprintf("Built   : %s %s\n", __DATE__, __TIME__);
+    dbgprintf("Version : %d.%d\n", VERSION >> 16, VERSION & 0xFFFF);
 
-	BootStatus(1);
+    MessageQueue = ES_Init(MessageHeap);
 
-	ret = SDHCInit();
-	if(!ret)
-	{
-		dbgprintf("SD:SDHCInit() failed:%d\n", ret );
-		BootStatus(-1);
-		Shutdown();
-	}
+    BootStatus(1);
 
-	BootStatus(2);
+    ret = SDHCInit();
 
-	fatfs = (FATFS*)malloca( sizeof(FATFS), 32 );
+    if (!ret) {
+        dbgprintf("SD:SDHCInit() failed:%d\n", ret);
+        BootStatus(-1);
+        Shutdown();
+    }
 
-	s32 res = f_mount( 0, fatfs );
-	if( res != FR_OK )
-	{
-		dbgprintf("ES:f_mount() failed:%d\n", res );
-		BootStatus(-2);
-		Shutdown();
-	}
-	
-	BootStatus(3);
+    BootStatus(2);
 
-	ConfigInit();
-	
-	BootStatus(4);
+    fatfs = (FATFS *) malloca(sizeof(FATFS), 32);
 
-	SDisInit = 1;
-	
-	ret = 0;
-	u32 PADTimer=0;
-			
-	thread_set_priority( 0, 0x0A );
+    s32 res = f_mount(0, fatfs);
 
-	if( ConfigGetConfig(NIN_CFG_HID) )
-	{
-		if( HIDInit() < 0 )
-		{
-			dbgprintf("ES:HIDInit() failed\n" );
-			BootStatus(-3);
-			Shutdown();
-		}
-	}
+    if (res != FR_OK) {
+        dbgprintf("ES:f_mount() failed:%d\n", res);
+        BootStatus(-2);
+        Shutdown();
+    }
 
-	BootStatus(5);
-	
-	PADTimer = read32( HW_TIMER );		
+    BootStatus(3);
 
-	DIinit();
-	BootStatus(6);
+    ConfigInit();
 
-	EXIInit();
+    BootStatus(4);
 
-	BootStatus(7);
+    SDisInit = 1;
 
-//Tell PPC side we are ready!	
-	BootStatus(0xdeadbeef);
-	
-	write32( HW_PPCIRQFLAG, read32(HW_PPCIRQFLAG) );
-	write32( HW_ARMIRQFLAG, read32(HW_ARMIRQFLAG) );
-	
-	set32( HW_PPCIRQMASK, (1<<31) );
-	set32( HW_IPC_PPCCTRL, 0x30 );
-												
-	thread_set_priority( 0, 127 );
+    ret = 0;
+    u32 PADTimer = 0;
 
-	cc_ahbMemFlush(1);
+    thread_set_priority(0, 0x0A);
 
-	write32(0xd8006a0, 0x30000004), mask32(0xd8006a8, 0, 2);
-		
-	while (1)
-	{
-		_ahbMemFlush(0);
+    if (ConfigGetConfig(NIN_CFG_HID)) {
+        if (HIDInit() < 0) {
+            dbgprintf("ES:HIDInit() failed\n");
+            BootStatus(-3);
+            Shutdown();
+        }
+    }
 
-		if( (u64)( read32(HW_TIMER) - PADTimer ) >= 50000 )	// about 37 times a second, 63287
-		{
-			if( ConfigGetConfig(NIN_CFG_HID) )
-			{
-				HIDRead();
-			} else {
-				HIDGCRead();
-			}
+    BootStatus(5);
 
-			PADTimer = read32(HW_TIMER);				
-		}
+    PADTimer = read32(HW_TIMER);
 
-		//Baten Kaitos save hax
-		if( read32(0) == 0x474B4245 )
-		{
-			if( read32( 0x0073E640 ) == 0xFFFFFFFF )
-			{
-				write32( 0x0073E640, 0 );
-			}
-		}
+    DIinit();
+    BootStatus(6);
 
-		if( Streaming )
-		{
-			if( (*(vu32*)0x0d800010 * 19 / 10) - StreamTimer >= 5000000 )
-			{
-			//	dbgprintf(".");
-				StreamOffset += 64*1024;
+    EXIInit();
 
-				if( StreamOffset >= StreamSize )
-				{
-					StreamOffset = StreamSize;
-					Streaming = 0;
-				}
-				StreamTimer = read32(HW_TIMER) * 19 / 10;
-			}
-		}
+    BootStatus(7);
 
-		if( DiscChangeIRQ )
-		if( read32(HW_TIMER) * 128 / 243000000 > 2 )
-		{
-		//	dbgprintf("DIP:IRQ mon!\n");
+    // Tell PPC side we are ready!
+    BootStatus(0xdeadbeef);
 
-			while( read32(DI_SCONTROL) & 1 )
-				clear32( DI_SCONTROL, 1 );
+    write32(HW_PPCIRQFLAG, read32(HW_PPCIRQFLAG));
+    write32(HW_ARMIRQFLAG, read32(HW_ARMIRQFLAG));
 
-			set32( DI_SSTATUS, 0x3A );
+    set32(HW_PPCIRQMASK, (1 << 31));
+    set32(HW_IPC_PPCCTRL, 0x30);
 
-			write32( 0x0D806000, 0x3E );
-			write32( 0x0D806008, 0xE0000000 );
-			write32( 0x0D806020, 0 );
-			write32( 0x0D80601C, 1 );
+    thread_set_priority(0, 127);
 
-			DiscChangeIRQ = 0;
-		}
+    cc_ahbMemFlush(1);
 
-		DIUpdateRegisters();
+    write32(0xd8006a0, 0x30000004), mask32(0xd8006a8, 0, 2);
 
-		EXIUpdateRegistersNEW();
+    while (1) {
+        _ahbMemFlush(0);
 
-		cc_ahbMemFlush(1);
-	}
+        if ((u64) (read32(HW_TIMER) - PADTimer) >= 50000) { // about 37 times a second, 63287
+            if (ConfigGetConfig(NIN_CFG_HID)) {
+                HIDRead();
+            } else {
+                HIDGCRead();
+            }
 
-	return 0;
+            PADTimer = read32(HW_TIMER);
+        }
+
+        // Baten Kaitos save hax
+        if (read32(0) == 0x474B4245) {
+            if (read32(0x0073E640) == 0xFFFFFFFF) {
+                write32(0x0073E640, 0);
+            }
+        }
+
+        if (Streaming) {
+            if ((*(vu32 *) 0x0d800010 * 19 / 10) - StreamTimer >= 5000000) {
+                // dbgprintf(".");
+                StreamOffset += 64 * 1024;
+
+                if (StreamOffset >= StreamSize) {
+                    StreamOffset = StreamSize;
+                    Streaming = 0;
+                }
+
+                StreamTimer = read32(HW_TIMER) * 19 / 10;
+            }
+        }
+
+        if (DiscChangeIRQ) {
+            if (read32(HW_TIMER) * 128 / 243000000 > 2) {
+                // dbgprintf("DIP:IRQ mon!\n");
+
+                while (read32(DI_SCONTROL) & 1) {
+                    clear32(DI_SCONTROL, 1);
+                }
+
+                set32(DI_SSTATUS, 0x3A);
+
+                write32(0x0D806000, 0x3E);
+                write32(0x0D806008, 0xE0000000);
+                write32(0x0D806020, 0);
+                write32(0x0D80601C, 1);
+
+                DiscChangeIRQ = 0;
+            }
+        }
+
+        DIUpdateRegisters();
+
+        EXIUpdateRegistersNEW();
+
+        cc_ahbMemFlush(1);
+    }
+
+    return 0;
 }

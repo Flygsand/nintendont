@@ -3,49 +3,50 @@
 
 #define VERSION 0x00000001
 
-#define DEBUG		1
-#define false		0
-#define true		1
-//#define CHEATMENU	1
+#define DEBUG       1
+#define false       0
+#define true        1
+// #define CHEATMENU	1
 #define EXIPATCH 1
 #define CHEATS 1
-//#define HID 1
-//#define CARDDEBUG 1
-//#define AUDIOSTREAM 1
+// #define HID 1
+// #define CARDDEBUG 1
+// #define AUDIOSTREAM 1
 
-//#define DEBUG_ES	1
-//#define DEBUG_HID	1
-//#define DEBUG_DI	1
-//#define DEBUG_SD	1
-//#define DEBUG_EXI	1
+// #define DEBUG_ES	1
+// #define DEBUG_HID	1
+// #define DEBUG_DI	1
+// #define DEBUG_SD	1
+// #define DEBUG_EXI	1
 
 
-#define UINT_MAX ((unsigned int)0xffffffff)
-#define MEM2_BSS __attribute__ ((section (".bss.mem2")))
+#define UINT_MAX ((unsigned int) 0xffffffff)
+#define MEM2_BSS __attribute__((section(".bss.mem2")))
 
-#define ALIGN_FORWARD(x,align) \
-	((typeof(x))((((u32)(x)) + (align) - 1) & (~(align-1))))
+#define ALIGN_FORWARD(x, align) \
+    ((typeof(x))((((u32) (x)) + (align) - 1) & (~(align - 1))))
 
-#define ALIGN_BACKWARD(x,align) \
-	((typeof(x))(((u32)(x)) & (~(align-1))))
+#define ALIGN_BACKWARD(x, align) \
+    ((typeof(x))(((u32) (x)) & (~(align - 1))))
 
 #define LINESIZE 0x20
 #define CACHESIZE 0x4000
 
-enum AHBDEV {
-	AHB_STARLET = 0, //or MEM2 or some controller or bus or ??
-	AHB_PPC = 1, //ppc or something else???
-	AHB_NAND = 3,
-	AHB_AES = 4,
-	AHB_SHA1 = 5,
-	AHB_EHCI = 6,
-	AHB_SDHC = 9,
+enum AHBDEV
+{
+    AHB_STARLET = 0, // or MEM2 or some controller or bus or ??
+    AHB_PPC = 1, // ppc or something else???
+    AHB_NAND = 3,
+    AHB_AES = 4,
+    AHB_SHA1 = 5,
+    AHB_EHCI = 6,
+    AHB_SDHC = 9,
 };
 
-#define P2C(x)			((x)&0x7FFFFFFF)
+#define P2C(x)          ((x) & 0x7FFFFFFF)
 
-#define	SHARED_PTR	((void *)0x13600000)
-#define	SHARED_SIZE	(0x18000)
+#define SHARED_PTR  ((void *) 0x13600000)
+#define SHARED_SIZE (0x18000)
 
 void fatal(const char *format, ...);
 
@@ -80,98 +81,98 @@ typedef s32 size_t;
 
 typedef u32 u_int32_t;
 
-typedef s32(*ipccallback)(s32 result,void *usrdata);
+typedef s32(*ipccallback)(s32 result, void *usrdata);
 
-#define NULL ((void *)0)
+#define NULL ((void *) 0)
 
 #define ALIGNED(x) __attribute__((aligned(x)))
 
 #define STACK_ALIGN(type, name, cnt, alignment)         \
-	u8 _al__##name[((sizeof(type)*(cnt)) + (alignment) + \
-	(((sizeof(type)*(cnt))%(alignment)) > 0 ? ((alignment) - \
-	((sizeof(type)*(cnt))%(alignment))) : 0))]; \
-	type *name = (type*)(((u32)(_al__##name)) + ((alignment) - (( \
-	(u32)(_al__##name))&((alignment)-1))))
+    u8 _al__ ## name[((sizeof(type) * (cnt)) + (alignment) + \
+                      (((sizeof(type) * (cnt)) % (alignment)) > 0 ? ((alignment) - \
+                                                                     ((sizeof(type) * (cnt)) % (alignment))) : 0))]; \
+    type *name = (type *) (((u32) (_al__ ## name)) + ((alignment) - (( \
+                                                                         (u32) (_al__ ## name)) & ((alignment) - 1))))
 
 
 
-#define		HW_REG_BASE			0xd800000
-#define		HW_PPCIRQFLAG		(HW_REG_BASE + 0x030)
-#define		HW_ARMIRQFLAG		(HW_REG_BASE + 0x038)
-#define		HW_PPCIRQMASK		(HW_REG_BASE + 0x034)
-#define		HW_IPC_PPCCTRL		(HW_REG_BASE + 0x004)
-#define		HW_VERSION			(HW_REG_BASE + 0x214)
+#define     HW_REG_BASE         0xd800000
+#define     HW_PPCIRQFLAG       (HW_REG_BASE + 0x030)
+#define     HW_ARMIRQFLAG       (HW_REG_BASE + 0x038)
+#define     HW_PPCIRQMASK       (HW_REG_BASE + 0x034)
+#define     HW_IPC_PPCCTRL      (HW_REG_BASE + 0x004)
+#define     HW_VERSION          (HW_REG_BASE + 0x214)
 
-#define		MEM_REG_BASE		0xd8b4000
-#define		MEM_PROT			(MEM_REG_BASE+0x20a)
-#define		MEM_PROT_START		(MEM_REG_BASE+0x20c)
-#define		MEM_PROT_END		(MEM_REG_BASE+0x20e)
-#define		MEM_FLUSHREQ		(MEM_REG_BASE+0x228)
-#define		MEM_FLUSHACK		(MEM_REG_BASE+0x22a)
+#define     MEM_REG_BASE        0xd8b4000
+#define     MEM_PROT            (MEM_REG_BASE + 0x20a)
+#define     MEM_PROT_START      (MEM_REG_BASE + 0x20c)
+#define     MEM_PROT_END        (MEM_REG_BASE + 0x20e)
+#define     MEM_FLUSHREQ        (MEM_REG_BASE + 0x228)
+#define     MEM_FLUSHACK        (MEM_REG_BASE + 0x22a)
 
 // TODO: move to hollywood.h once we figure out WTF
-#define		HW_100	(HW_REG_BASE + 0x100)
-#define		HW_104	(HW_REG_BASE + 0x104)
-#define		HW_108	(HW_REG_BASE + 0x108)
-#define		HW_10c	(HW_REG_BASE + 0x10c)
-#define		HW_110	(HW_REG_BASE + 0x110)
-#define		HW_114	(HW_REG_BASE + 0x114)
-#define		HW_118	(HW_REG_BASE + 0x118)
-#define		HW_11c	(HW_REG_BASE + 0x11c)
-#define		HW_120	(HW_REG_BASE + 0x120)
-#define		HW_124	(HW_REG_BASE + 0x124)
-#define		HW_130	(HW_REG_BASE + 0x130)
-#define		HW_134	(HW_REG_BASE + 0x134)
-#define		HW_138	(HW_REG_BASE + 0x138)
-#define		HW_188	(HW_REG_BASE + 0x188)
-#define		HW_18C	(HW_REG_BASE + 0x18c)
+#define     HW_100  (HW_REG_BASE + 0x100)
+#define     HW_104  (HW_REG_BASE + 0x104)
+#define     HW_108  (HW_REG_BASE + 0x108)
+#define     HW_10c  (HW_REG_BASE + 0x10c)
+#define     HW_110  (HW_REG_BASE + 0x110)
+#define     HW_114  (HW_REG_BASE + 0x114)
+#define     HW_118  (HW_REG_BASE + 0x118)
+#define     HW_11c  (HW_REG_BASE + 0x11c)
+#define     HW_120  (HW_REG_BASE + 0x120)
+#define     HW_124  (HW_REG_BASE + 0x124)
+#define     HW_130  (HW_REG_BASE + 0x130)
+#define     HW_134  (HW_REG_BASE + 0x134)
+#define     HW_138  (HW_REG_BASE + 0x138)
+#define     HW_188  (HW_REG_BASE + 0x188)
+#define     HW_18C  (HW_REG_BASE + 0x18c)
 
-#define		ARAM_DIR_MRAM_TO_ARAM       0x00
-#define		ARAM_DIR_ARAM_TO_MRAM       0x01
+#define     ARAM_DIR_MRAM_TO_ARAM       0x00
+#define     ARAM_DIR_ARAM_TO_MRAM       0x01
 
-#define HW_BASE			0x0d800000
-#define HW_GPIO_ENABLE	(HW_BASE+0xDC)
-#define HW_GPIO_OUT		(HW_BASE+0xE0)
+#define HW_BASE         0x0d800000
+#define HW_GPIO_ENABLE  (HW_BASE + 0xDC)
+#define HW_GPIO_OUT     (HW_BASE + 0xE0)
 
-#define	HW_REG_BASE		0xd800000
-#define	HW_TIMER		(HW_REG_BASE + 0x010)
+#define HW_REG_BASE     0xd800000
+#define HW_TIMER        (HW_REG_BASE + 0x010)
 
-#define GPIO_POWER	(1<<1)
-#define P2C(x)			((x)&0x7FFFFFFF)
+#define GPIO_POWER  (1 << 1)
+#define P2C(x)          ((x) & 0x7FFFFFFF)
 
-#define		CARD_BASE		0x00002F60
+#define     CARD_BASE       0x00002F60
 
-#define		CARD_CMD		(CARD_BASE+0x00)
-#define		CARD_CMD_1		(CARD_BASE+0x04)
-#define		CARD_CMD_2		(CARD_BASE+0x08)
-#define		CARD_CMD_3		(CARD_BASE+0x0C)
-#define		CARD_CMD_4		(CARD_BASE+0x10)
-#define		CARD_RETURN		(CARD_BASE+0x14)
-#define		CARD_CONTROL	(CARD_BASE+0x18)
-#define		CARD_STATUS		(CARD_BASE+0x1C)
+#define     CARD_CMD        (CARD_BASE + 0x00)
+#define     CARD_CMD_1      (CARD_BASE + 0x04)
+#define     CARD_CMD_2      (CARD_BASE + 0x08)
+#define     CARD_CMD_3      (CARD_BASE + 0x0C)
+#define     CARD_CMD_4      (CARD_BASE + 0x10)
+#define     CARD_RETURN     (CARD_BASE + 0x14)
+#define     CARD_CONTROL    (CARD_BASE + 0x18)
+#define     CARD_STATUS     (CARD_BASE + 0x1C)
 
-#define		CARD_SHADOW		(CARD_BASE + 0x20)
+#define     CARD_SHADOW     (CARD_BASE + 0x20)
 
-#define		CARD_SCMD		(CARD_SHADOW+0x00)
-#define		CARD_SCMD_1		(CARD_SHADOW+0x04)
-#define		CARD_SCMD_2		(CARD_SHADOW+0x08)
-#define		CARD_SCMD_3		(CARD_SHADOW+0x0C)
-#define		CARD_SCMD_4		(CARD_SHADOW+0x10)
-#define		CARD_SRETURN	(CARD_SHADOW+0x14)
-#define		CARD_SCONTROL	(CARD_SHADOW+0x18)
-#define		CARD_SSTATUS	(CARD_SHADOW+0x1C)
+#define     CARD_SCMD       (CARD_SHADOW + 0x00)
+#define     CARD_SCMD_1     (CARD_SHADOW + 0x04)
+#define     CARD_SCMD_2     (CARD_SHADOW + 0x08)
+#define     CARD_SCMD_3     (CARD_SHADOW + 0x0C)
+#define     CARD_SCMD_4     (CARD_SHADOW + 0x10)
+#define     CARD_SRETURN    (CARD_SHADOW + 0x14)
+#define     CARD_SCONTROL   (CARD_SHADOW + 0x18)
+#define     CARD_SSTATUS    (CARD_SHADOW + 0x1C)
 
 enum Gameregion
 {
-	REGION_JAPAN = 0,
-	REGION_USA,
-	REGION_EXPORT,
+    REGION_JAPAN = 0,
+    REGION_USA,
+    REGION_EXPORT,
 };
 
 typedef struct
 {
-	u32 data;
-	u32 len;
+    u32 data;
+    u32 len;
 } vector;
 
 typedef struct PADStatus
@@ -206,68 +207,67 @@ typedef struct PADStatus
 
 static inline u16 read16(u32 addr)
 {
-	u32 data;
-	__asm__ volatile ("ldrh\t%0, [%1]" : "=l" (data) : "l" (addr));
-	return data;
+    u32 data;
+    __asm__ volatile ("ldrh\t%0, [%1]" : "=l" (data) : "l" (addr));
+    return data;
 }
 
 static inline void write16(u32 addr, u16 data)
 {
-	__asm__ volatile ("strh\t%0, [%1]" : : "l" (data), "l" (addr));
+    __asm__ volatile ("strh\t%0, [%1]" : : "l" (data), "l" (addr));
 }
 
 static inline u32 read32(u32 addr)
 {
-	u32 data;
-	__asm__ volatile ("ldr\t%0, [%1]" : "=l" (data) : "l" (addr));
-	return data;
+    u32 data;
+    __asm__ volatile ("ldr\t%0, [%1]" : "=l" (data) : "l" (addr));
+    return data;
 }
 
 static inline void write32(u32 addr, u32 data)
 {
-	__asm__ volatile ("str\t%0, [%1]" : : "l" (data), "l" (addr));
+    __asm__ volatile ("str\t%0, [%1]" : : "l" (data), "l" (addr));
 }
 
 static inline u32 set32(u32 addr, u32 set)
 {
-	u32 data;
-	__asm__ volatile (
-		"ldr\t%0, [%1]\n"
-		"\torr\t%0, %2\n"
-		"\tstr\t%0, [%1]"
-		: "=&l" (data)
-		: "l" (addr), "l" (set)
-	);
-	return data;
+    u32 data;
+    __asm__ volatile (
+        "ldr\t%0, [%1]\n"
+        "\torr\t%0, %2\n"
+        "\tstr\t%0, [%1]"
+        : "=&l" (data)
+        : "l" (addr), "l" (set)
+        );
+    return data;
 }
 
 static inline u32 mask32(u32 addr, u32 clear, u32 set)
 {
-	u32 data;
-	__asm__ volatile (
-		"ldr\t%0, [%1]\n"
-		"\tbic\t%0, %3\n"
-		"\torr\t%0, %2\n"
-		"\tstr\t%0, [%1]"
-		: "=&l" (data)
-		: "l" (addr), "l" (set), "l" (clear)
-	);
-	return data;
+    u32 data;
+    __asm__ volatile (
+        "ldr\t%0, [%1]\n"
+        "\tbic\t%0, %3\n"
+        "\torr\t%0, %2\n"
+        "\tstr\t%0, [%1]"
+        : "=&l" (data)
+        : "l" (addr), "l" (set), "l" (clear)
+        );
+    return data;
 }
+
 static inline u32 clear32(u32 addr, u32 clear)
 {
-	u32 data;
-	__asm__ volatile (
-		"ldr\t%0, [%1]\n"
-		"\tbic\t%0, %2\n"
-		"\tstr\t%0, [%1]"
-		: "=&l" (data)
-		: "l" (addr), "l" (clear)
-	);
-	return data;
+    u32 data;
+    __asm__ volatile (
+        "ldr\t%0, [%1]\n"
+        "\tbic\t%0, %2\n"
+        "\tstr\t%0, [%1]"
+        : "=&l" (data)
+        : "l" (addr), "l" (clear)
+        );
+    return data;
 }
 
-
-#define IsWiiU ( (*(u32*)0x0d8005A0 >> 16 ) == 0xCAFE )
-
+#define IsWiiU ((*(u32 *) 0x0d8005A0 >> 16) == 0xCAFE)
 #endif

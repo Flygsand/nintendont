@@ -24,16 +24,13 @@
 
 enum
 {
-	ONE_BLOCK_SIZE = 32,
-	SAMPLES_PER_BLOCK = 28
+    ONE_BLOCK_SIZE = 32,
+    SAMPLES_PER_BLOCK = 28
 };
 
 #ifdef AUDIOSTREAM
 
-void decode_ngc_dtk( u8 *stream, u16 * outbuf, int channelspacing, s32 first_sample, s32 samples_to_do, int channel);
-void transcode_frame(const char * framebuf, int channel, char * outframe);
-
+void decode_ngc_dtk(u8 *stream, u16 *outbuf, int channelspacing, s32 first_sample, s32 samples_to_do, int channel);
+void transcode_frame(const char *framebuf, int channel, char *outframe);
 #endif
-
 #endif
-

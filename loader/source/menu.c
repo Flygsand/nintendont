@@ -1,23 +1,23 @@
 /*
-
-Nintendont (Loader) - Playing Gamecubes in Wii mode on a Wii U
-
-Copyright (C) 2013  crediar
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation version 2.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-*/
+ *
+ * Nintendont (Loader) - Playing Gamecubes in Wii mode on a Wii U
+ *
+ * Copyright (C) 2013  crediar
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation version 2.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
 #include "menu.h"
 #include "font.h"
 #include "exi.h"
@@ -42,408 +42,383 @@ extern FILE *cfg;
 u32 Shutdown = 0;
 void HandleWiiMoteEvent(s32 chan)
 {
-	Shutdown = 1;
+    Shutdown = 1;
 }
+
 void HandleSTMEvent(u32 event)
 {
-	*(vu32*)(0xCC003024) = 1;
+    *(vu32 *) (0xCC003024) = 1;
 
-	switch(event)
-	{
-		default:
-		case STM_EVENT_RESET:
-			break;
-		case STM_EVENT_POWER:
-			Shutdown = 1;
-			break;
-	}
+    switch (event) {
+        default:
+        case STM_EVENT_RESET:
+            break;
+        case STM_EVENT_POWER:
+            Shutdown = 1;
+            break;
+    }
 }
-void SelectGame( void )
+
+void SelectGame(void)
 {
-//Create a list of games
-	char filename[MAXPATHLEN];
-	
-	DIR *pdir;
-	struct dirent *pent;
-	struct stat statbuf;
+    // Create a list of games
+    char filename[MAXPATHLEN];
 
-	pdir = opendir ("/games");
-	if( !pdir )
-	{
-		ClearScreen();
-		gprintf("No FAT device found, or missing games dir!\n");
-		PrintFormat( 25, 232, "No FAT device found, or missing games dir!" );
-		sleep(10);
-		exit(1);
-	}
+    DIR *pdir;
+    struct dirent *pent;
+    struct stat statbuf;
 
-	u32 gamecount = 0;
-	char buf[0x100];
-	gameinfo gi[64];
+    pdir = opendir("/games");
 
-	memset( gi, 0, sizeof(gameinfo) * 64 );
+    if (!pdir) {
+        ClearScreen();
+        gprintf("No FAT device found, or missing games dir!\n");
+        PrintFormat(25, 232, "No FAT device found, or missing games dir!");
+        sleep(10);
+        exit(1);
+    }
 
-	while( ( pent = readdir(pdir) ) != NULL )
-	{
-		stat( pent->d_name, &statbuf );
-		if( pent->d_type == DT_DIR )
-		{
-			if( strstr( pent->d_name, "." ) != NULL )
-				continue;
+    u32 gamecount = 0;
+    char buf[0x100];
+    gameinfo gi[64];
 
-		//	gprintf( "%s", pent->d_name );
+    memset(gi, 0, sizeof(gameinfo) * 64);
 
-			//Test if game.iso exists and add to list
+    while ((pent = readdir(pdir)) != NULL) {
+        stat(pent->d_name, &statbuf);
 
-			sprintf( filename, "sd:/games/%s/game.iso", pent->d_name );
+        if (pent->d_type == DT_DIR) {
+            if (strstr(pent->d_name, ".") != NULL) {
+                continue;
+            }
 
-			FILE *in = fopen( filename, "rb" );
-			if( in != NULL )
-			{
-			//	gprintf("(%s) ok\n", filename );
-				fread( buf, 1, 0x100, in );
-				fclose(in);
+            // gprintf( "%s", pent->d_name );
 
-				if( *(vu32*)(buf+0x1C) == 0xC2339F3D )	// Must be GC game
-				{
-					gi[gamecount].Name = strdup( buf + 0x20 );
-					gi[gamecount].Path = strdup( filename );
+            // Test if game.iso exists and add to list
 
-					gamecount++;
-				}
-			} else { // Check for FST format
-				
-				sprintf( filename, "sd:/games/%s/sys/boot.bin", pent->d_name );
+            sprintf(filename, "sd:/games/%s/game.iso", pent->d_name);
 
-				FILE *in = fopen( filename, "rb" );
-				if( in != NULL )
-				{
-				//	gprintf("(%s) ok\n", filename );
-					fread( buf, 1, 0x100, in );
-					fclose(in);
+            FILE *in = fopen(filename, "rb");
 
-					if( *(vu32*)(buf+0x1C) == 0xC2339F3D )	// Must be GC game
-					{
-						sprintf( filename, "sd:/games/%s/", pent->d_name );
+            if (in != NULL) {
+                // gprintf("(%s) ok\n", filename );
+                fread(buf, 1, 0x100, in);
+                fclose(in);
 
-						gi[gamecount].Name = strdup( buf + 0x20 );
-						gi[gamecount].Path = strdup( filename );
+                if (*(vu32 *) (buf + 0x1C) == 0xC2339F3D) { // Must be GC game
+                    gi[gamecount].Name = strdup(buf + 0x20);
+                    gi[gamecount].Path = strdup(filename);
 
-						gamecount++;
-					}
-				}
-			}
-		}
-	}
+                    gamecount++;
+                }
+            } else { // Check for FST format
+                sprintf(filename, "sd:/games/%s/sys/boot.bin", pent->d_name);
 
-	if( gamecount == 0 )
-	{
-		ClearScreen();
-		gprintf("No games found!\n");
-		PrintFormat( 25, 232, "No games found!" );
-		sleep(10);
-		exit(1);
-	}
+                FILE *in = fopen(filename, "rb");
 
-	u32 redraw = 1;
-	u32 i;
-	s32 PosX = 0;
-	s32 ScrollX = 0;
-	u32 MenuMode = 0;
+                if (in != NULL) {
+                    // gprintf("(%s) ok\n", filename );
+                    fread(buf, 1, 0x100, in);
+                    fclose(in);
 
-	u32 ListMax = gamecount;
-	if( ListMax > 14 )
-		ListMax = 14;
+                    if (*(vu32 *) (buf + 0x1C) == 0xC2339F3D) { // Must be GC game
+                        sprintf(filename, "sd:/games/%s/", pent->d_name);
 
-	while(1)
-	{
-		FPAD_Update();
+                        gi[gamecount].Name = strdup(buf + 0x20);
+                        gi[gamecount].Path = strdup(filename);
 
-		if( FPAD_Start(1) )
-		{
-			ClearScreen();
-			PrintFormat( 90, 232, "Returning to loader..." );
-			exit(0);			
-		}
+                        gamecount++;
+                    }
+                }
+            }
+        }
+    }
 
-		if( FPAD_Cancel(0) )
-		{
-			MenuMode ^= 1;
+    if (gamecount == 0) {
+        ClearScreen();
+        gprintf("No games found!\n");
+        PrintFormat(25, 232, "No games found!");
+        sleep(10);
+        exit(1);
+    }
 
-			PosX	= 0;
-			ScrollX = 0;
+    u32 redraw = 1;
+    u32 i;
+    s32 PosX = 0;
+    s32 ScrollX = 0;
+    u32 MenuMode = 0;
 
-			if( MenuMode == 0 )
-			{
-				ListMax = gamecount;
-				if( ListMax > 14 )
-					ListMax = 14;
+    u32 ListMax = gamecount;
 
-			}  else {
+    if (ListMax > 14) {
+        ListMax = 14;
+    }
 
-				ListMax = 9;
+    while (1) {
+        FPAD_Update();
 
-				if( (ncfg.VideoMode & NIN_VID_MASK) == NIN_VID_FORCE )
-					ListMax = 10;
-			}
-			
-			redraw = 1;
+        if (FPAD_Start(1)) {
+            ClearScreen();
+            PrintFormat(90, 232, "Returning to loader...");
+            exit(0);
+        }
 
-			ClearScreen();
+        if (FPAD_Cancel(0)) {
+            MenuMode ^= 1;
 
-			if( IsWiiU() )
-			{
-				PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (Wii U)         A: Start Game" );
-			} else {
-				PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (Wii)           A: Start Game" );
-			}
+            PosX    = 0;
+            ScrollX = 0;
 
-			PrintFormat( MENU_POS_X, MENU_POS_Y + 20*2, "Built   : %s %s    B: Settings\n", __DATE__, __TIME__ );
-			PrintFormat( MENU_POS_X, MENU_POS_Y + 20*3, "Firmware: %d.%d.%d\n", *(vu16*)0x80003140, *(vu8*)0x80003142, *(vu8*)0x80003143 );
-		}
+            if (MenuMode == 0) {
+                ListMax = gamecount;
 
-	//	gprintf("\rS:%u P:%u G:%u M:%u    ", ScrollX, PosX, gamecount, ListMax );
+                if (ListMax > 14) {
+                    ListMax = 14;
+                }
+            } else {
+                ListMax = 9;
 
-		if( MenuMode == 0 )
-		{
-			if( FPAD_Down(0) )
-			{
-				PrintFormat( MENU_POS_X+51*6-8, MENU_POS_Y + 20*6 + PosX * 20, " " );
+                if ((ncfg.VideoMode & NIN_VID_MASK) == NIN_VID_FORCE) {
+                    ListMax = 10;
+                }
+            }
 
-				if( PosX + 1 >= ListMax )
-				{
-					if( PosX + 1 + ScrollX < gamecount)
-						ScrollX++;
-					else {
-						PosX	= 0;
-						ScrollX = 0;
-					}
-				} else {
-					PosX++;
-				}
-			
-				redraw=1;
-			} else if( FPAD_Up(0) )
-			{
-				PrintFormat( MENU_POS_X+51*6-8, MENU_POS_Y + 20*6 + PosX * 20, " " );
+            redraw = 1;
 
-				if( PosX <= 0 )
-				{
-					if( ScrollX > 0 )
-						ScrollX--;
-					else {
-						PosX	= ListMax - 1;
-						ScrollX = gamecount - ListMax;
-					}
-				} else {
-					PosX--;
-				}
+            ClearScreen();
 
-				redraw=1;
-			}
+            if (IsWiiU()) {
+                PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 1, "Nintendont Loader (Wii U)         A: Start Game");
+            } else {
+                PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 1, "Nintendont Loader (Wii)           A: Start Game");
+            }
 
-			if( FPAD_OK(0) )
-			{
-				break;
-			}
+            PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 2, "Built   : %s %s    B: Settings\n", __DATE__, __TIME__);
+            PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 3, "Firmware: %d.%d.%d\n", *(vu16 *) 0x80003140, *(vu8 *) 0x80003142, *(vu8 *) 0x80003143);
+        }
 
-			if( redraw )
-			{
-				for( i=0; i < ListMax; ++i )
-					PrintFormat( MENU_POS_X-8, MENU_POS_Y + 20*6 + i * 20, "% 51.51s", gi[i+ScrollX].Name );
-					
-				PrintFormat( MENU_POS_X+51*6-8, MENU_POS_Y + 20*6 + PosX * 20, "<" );
-			}
+        // gprintf("\rS:%u P:%u G:%u M:%u    ", ScrollX, PosX, gamecount, ListMax );
 
-		} else {		
-			
-			if( FPAD_Down(0) )
-			{
-				PrintFormat( MENU_POS_X+30, 164+16*PosX, " " );
-				
-				PosX++;
+        if (MenuMode == 0) {
+            if (FPAD_Down(0)) {
+                PrintFormat(MENU_POS_X + 51 * 6 - 8, MENU_POS_Y + 20 * 6 + PosX * 20, " ");
 
-				if( PosX >= ListMax )
-				{
-					ScrollX = 0;
-					PosX	= 0;					
-				}
-			
-				redraw=1;
+                if (PosX + 1 >= ListMax) {
+                    if (PosX + 1 + ScrollX < gamecount) {
+                        ScrollX++;
+                    } else {
+                        PosX    = 0;
+                        ScrollX = 0;
+                    }
+                } else {
+                    PosX++;
+                }
 
-			} else if( FPAD_Up(0) )
-			{
-				PrintFormat( MENU_POS_X+30, 164+16*PosX, " " );
+                redraw = 1;
+            } else if (FPAD_Up(0)) {
+                PrintFormat(MENU_POS_X + 51 * 6 - 8, MENU_POS_Y + 20 * 6 + PosX * 20, " ");
 
-				PosX--;
+                if (PosX <= 0) {
+                    if (ScrollX > 0) {
+                        ScrollX--;
+                    } else {
+                        PosX    = ListMax - 1;
+                        ScrollX = gamecount - ListMax;
+                    }
+                } else {
+                    PosX--;
+                }
 
-				if( PosX < 0 )
-					PosX = ListMax - 1;			
+                redraw = 1;
+            }
 
-				redraw=1;
-			}
+            if (FPAD_OK(0)) {
+                break;
+            }
 
-			if( FPAD_OK(0) )
-			{
-				switch( PosX )
-				{
-					case 0:
-					{
-						ncfg.Config ^= NIN_CFG_CHEATS;
-					} break;
-					case 1:
-					{
-						ncfg.Config ^= NIN_CFG_FORCE_PROG;
-					} break;
-					case 2:
-					{
-						ncfg.Config ^= NIN_CFG_FORCE_WIDE;
-					} break;
-					case 3:
-					{
-						ncfg.Config ^= NIN_CFG_MEMCARDEMU;
-					} break;
-					case 4:
-					{
-						ncfg.Config ^= NIN_CFG_DEBUGGER;
-					} break;
-					case 5:
-					{
-						ncfg.Config ^= NIN_CFG_DEBUGWAIT;
-					} break;
-					case 6:
-					{
-						ncfg.Config ^= NIN_CFG_HID;
-					} break;
-					case 7:
-					{
-						ncfg.Config ^= NIN_CFG_OSREPORT;
-					} break;
-					case 8:
-					{
-						switch( ncfg.VideoMode & NIN_VID_MASK )
-						{
-							case NIN_VID_AUTO:
-								ncfg.VideoMode &= ~NIN_VID_MASK;
-								ncfg.VideoMode |= NIN_VID_FORCE;
+            if (redraw) {
+                for (i = 0; i < ListMax; ++i) {
+                    PrintFormat(MENU_POS_X - 8, MENU_POS_Y + 20 * 6 + i * 20, "% 51.51s", gi[i + ScrollX].Name);
+                }
 
-								ListMax = 10;
-							break;
-							case NIN_VID_FORCE:
-								ncfg.VideoMode &= ~NIN_VID_MASK;
-								ncfg.VideoMode |= NIN_VID_NONE;
+                PrintFormat(MENU_POS_X + 51 * 6 - 8, MENU_POS_Y + 20 * 6 + PosX * 20, "<");
+            }
+        } else {
+            if (FPAD_Down(0)) {
+                PrintFormat(MENU_POS_X + 30, 164 + 16 * PosX, " ");
 
-								ListMax = 9;
+                PosX++;
 
-								PrintFormat( MENU_POS_X+50, 164+16*9, "                             " );
+                if (PosX >= ListMax) {
+                    ScrollX = 0;
+                    PosX    = 0;
+                }
 
-							break;
-							case NIN_VID_NONE:
-								ncfg.VideoMode &= ~NIN_VID_MASK;
-								ncfg.VideoMode |= NIN_VID_AUTO;
+                redraw = 1;
+            } else if (FPAD_Up(0)) {
+                PrintFormat(MENU_POS_X + 30, 164 + 16 * PosX, " ");
 
-								ListMax = 9;
+                PosX--;
 
-								PrintFormat( MENU_POS_X+50, 164+16*9, "                             " );
+                if (PosX < 0) {
+                    PosX = ListMax - 1;
+                }
 
-							break;
-						}
+                redraw = 1;
+            }
 
-					} break;
-					case 9:
-					{
-						switch( ncfg.VideoMode & NIN_VID_FORCE_MASK )
-						{
-							case NIN_VID_FORCE_PAL50:
-								ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
-								ncfg.VideoMode |= NIN_VID_FORCE_PAL60;
-							break;
-							case NIN_VID_FORCE_PAL60:
-								ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
-								ncfg.VideoMode |= NIN_VID_FORCE_NTSC;
-							break;
-							case NIN_VID_FORCE_NTSC:
-								ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
-								ncfg.VideoMode |= NIN_VID_FORCE_MPAL;
-							break;
-							case NIN_VID_FORCE_MPAL:
-								ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
-								ncfg.VideoMode |= NIN_VID_FORCE_PAL50;
-							break;
-						}
+            if (FPAD_OK(0)) {
+                switch (PosX) {
+                    case 0: {
+                        ncfg.Config ^= NIN_CFG_CHEATS;
+                    }
+                    break;
+                    case 1: {
+                        ncfg.Config ^= NIN_CFG_FORCE_PROG;
+                    }
+                    break;
+                    case 2: {
+                        ncfg.Config ^= NIN_CFG_FORCE_WIDE;
+                    }
+                    break;
+                    case 3: {
+                        ncfg.Config ^= NIN_CFG_MEMCARDEMU;
+                    }
+                    break;
+                    case 4: {
+                        ncfg.Config ^= NIN_CFG_DEBUGGER;
+                    }
+                    break;
+                    case 5: {
+                        ncfg.Config ^= NIN_CFG_DEBUGWAIT;
+                    }
+                    break;
+                    case 6: {
+                        ncfg.Config ^= NIN_CFG_HID;
+                    }
+                    break;
+                    case 7: {
+                        ncfg.Config ^= NIN_CFG_OSREPORT;
+                    }
+                    break;
+                    case 8: {
+                        switch (ncfg.VideoMode & NIN_VID_MASK) {
+                            case NIN_VID_AUTO:
+                                ncfg.VideoMode &= ~NIN_VID_MASK;
+                                ncfg.VideoMode |= NIN_VID_FORCE;
 
-					} break;
-				}
-			}
+                                ListMax = 10;
+                                break;
+                            case NIN_VID_FORCE:
+                                ncfg.VideoMode &= ~NIN_VID_MASK;
+                                ncfg.VideoMode |= NIN_VID_NONE;
 
-			if( redraw )
-			{
-				PrintFormat( MENU_POS_X+50, 164+16*0, "Cheats                 :%s", (ncfg.Config&NIN_CFG_CHEATS)		? "On " : "Off" );
-				PrintFormat( MENU_POS_X+50, 164+16*1, "Force Progressive      :%s", (ncfg.Config&NIN_CFG_FORCE_PROG)	? "On " : "Off" );
-				PrintFormat( MENU_POS_X+50, 164+16*2, "Force Widescreen       :%s", (ncfg.Config&NIN_CFG_FORCE_WIDE)	? "On " : "Off" );
-				PrintFormat( MENU_POS_X+50, 164+16*3, "Memcard Emulation      :%s", (ncfg.Config&NIN_CFG_MEMCARDEMU)		? "On " : "Off" );
-				PrintFormat( MENU_POS_X+50, 164+16*4, "Debugger          (NYI):%s", (ncfg.Config&NIN_CFG_DEBUGGER)		? "On " : "Off" );
-				PrintFormat( MENU_POS_X+50, 164+16*5, "Debugger Wait     (NYI):%s", (ncfg.Config&NIN_CFG_DEBUGWAIT)		? "On " : "Off" );
-				PrintFormat( MENU_POS_X+50, 164+16*6, "Use HID device         :%s", (ncfg.Config&NIN_CFG_HID)			? "On " : "Off" );
-				PrintFormat( MENU_POS_X+50, 164+16*7, "OSReport               :%s", (ncfg.Config&NIN_CFG_OSREPORT)		? "On " : "Off" );
+                                ListMax = 9;
 
-				switch( ncfg.VideoMode & NIN_VID_MASK )
-				{
-					case NIN_VID_AUTO:
-						PrintFormat( MENU_POS_X+50, 164+16*8,"Video                  :%s", "auto " );
-					break;
-					case NIN_VID_FORCE:
-						PrintFormat( MENU_POS_X+50, 164+16*8,"Video                  :%s", "force" );
-					break;
-					case NIN_VID_NONE:
-						PrintFormat( MENU_POS_X+50, 164+16*8,"Video                  :%s", "none " );
-					break;		
-					default:
-						ncfg.VideoMode &= ~NIN_VID_MASK;
-						ncfg.VideoMode |= NIN_VID_AUTO;
-					break;			
-				}
+                                PrintFormat(MENU_POS_X + 50, 164 + 16 * 9, "                             ");
 
-				if( (ncfg.VideoMode & NIN_VID_FORCE) == NIN_VID_FORCE )
-				switch( ncfg.VideoMode & NIN_VID_FORCE_MASK )
-				{
-					case NIN_VID_FORCE_PAL50:
-						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :%s", "PAL50" );
-					break;
-					case NIN_VID_FORCE_PAL60:
-						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :%s", "PAL60" );
-					break;
-					case NIN_VID_FORCE_NTSC:
-						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :%s", "NTSC " );
-					break;
-					case NIN_VID_FORCE_MPAL:
-						PrintFormat( MENU_POS_X+50, 164+16*9, "Videomode              :%s", "MPAL " );
-					break;
-					default:
-						ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
-						ncfg.VideoMode |= NIN_VID_FORCE_NTSC;
-					break;
-				}
+                                break;
+                            case NIN_VID_NONE:
+                                ncfg.VideoMode &= ~NIN_VID_MASK;
+                                ncfg.VideoMode |= NIN_VID_AUTO;
 
-				PrintFormat( MENU_POS_X+30, 164+16*PosX, ">" );
-			}
-		}
-		
-		VIDEO_WaitVSync();
-	}
+                                ListMax = 9;
 
-	memcpy( ncfg.GamePath, gi[PosX+ScrollX].Path+3, strlen(gi[PosX+ScrollX].Path) );
-		
-	cfg = fopen("/nincfg.bin","wb");
-	if( cfg != NULL )
-	{
-		fwrite( &ncfg, sizeof(NIN_CFG), 1, cfg );
-		fclose( cfg );
-	}
+                                PrintFormat(MENU_POS_X + 50, 164 + 16 * 9, "                             ");
 
-	for( i=0; i < gamecount; ++i )
-	{
-		free(gi[i].Name);
-		free(gi[i].Path);
-	}
+                                break;
+                        }
+                    }
+                    break;
+                    case 9: {
+                        switch (ncfg.VideoMode & NIN_VID_FORCE_MASK) {
+                            case NIN_VID_FORCE_PAL50:
+                                ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
+                                ncfg.VideoMode |= NIN_VID_FORCE_PAL60;
+                                break;
+                            case NIN_VID_FORCE_PAL60:
+                                ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
+                                ncfg.VideoMode |= NIN_VID_FORCE_NTSC;
+                                break;
+                            case NIN_VID_FORCE_NTSC:
+                                ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
+                                ncfg.VideoMode |= NIN_VID_FORCE_MPAL;
+                                break;
+                            case NIN_VID_FORCE_MPAL:
+                                ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
+                                ncfg.VideoMode |= NIN_VID_FORCE_PAL50;
+                                break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            if (redraw) {
+                PrintFormat(MENU_POS_X + 50, 164 + 16 * 0, "Cheats                 :%s", (ncfg.Config & NIN_CFG_CHEATS)        ? "On " : "Off");
+                PrintFormat(MENU_POS_X + 50, 164 + 16 * 1, "Force Progressive      :%s", (ncfg.Config & NIN_CFG_FORCE_PROG)    ? "On " : "Off");
+                PrintFormat(MENU_POS_X + 50, 164 + 16 * 2, "Force Widescreen       :%s", (ncfg.Config & NIN_CFG_FORCE_WIDE)    ? "On " : "Off");
+                PrintFormat(MENU_POS_X + 50, 164 + 16 * 3, "Memcard Emulation      :%s", (ncfg.Config & NIN_CFG_MEMCARDEMU)        ? "On " : "Off");
+                PrintFormat(MENU_POS_X + 50, 164 + 16 * 4, "Debugger          (NYI):%s", (ncfg.Config & NIN_CFG_DEBUGGER)      ? "On " : "Off");
+                PrintFormat(MENU_POS_X + 50, 164 + 16 * 5, "Debugger Wait     (NYI):%s", (ncfg.Config & NIN_CFG_DEBUGWAIT)     ? "On " : "Off");
+                PrintFormat(MENU_POS_X + 50, 164 + 16 * 6, "Use HID device         :%s", (ncfg.Config & NIN_CFG_HID)           ? "On " : "Off");
+                PrintFormat(MENU_POS_X + 50, 164 + 16 * 7, "OSReport               :%s", (ncfg.Config & NIN_CFG_OSREPORT)      ? "On " : "Off");
+
+                switch (ncfg.VideoMode & NIN_VID_MASK) {
+                    case NIN_VID_AUTO:
+                        PrintFormat(MENU_POS_X + 50, 164 + 16 * 8, "Video                  :%s", "auto ");
+                        break;
+                    case NIN_VID_FORCE:
+                        PrintFormat(MENU_POS_X + 50, 164 + 16 * 8, "Video                  :%s", "force");
+                        break;
+                    case NIN_VID_NONE:
+                        PrintFormat(MENU_POS_X + 50, 164 + 16 * 8, "Video                  :%s", "none ");
+                        break;
+                    default:
+                        ncfg.VideoMode &= ~NIN_VID_MASK;
+                        ncfg.VideoMode |= NIN_VID_AUTO;
+                        break;
+                }
+
+                if ((ncfg.VideoMode & NIN_VID_FORCE) == NIN_VID_FORCE) {
+                    switch (ncfg.VideoMode & NIN_VID_FORCE_MASK) {
+                        case NIN_VID_FORCE_PAL50:
+                            PrintFormat(MENU_POS_X + 50, 164 + 16 * 9, "Videomode              :%s", "PAL50");
+                            break;
+                        case NIN_VID_FORCE_PAL60:
+                            PrintFormat(MENU_POS_X + 50, 164 + 16 * 9, "Videomode              :%s", "PAL60");
+                            break;
+                        case NIN_VID_FORCE_NTSC:
+                            PrintFormat(MENU_POS_X + 50, 164 + 16 * 9, "Videomode              :%s", "NTSC ");
+                            break;
+                        case NIN_VID_FORCE_MPAL:
+                            PrintFormat(MENU_POS_X + 50, 164 + 16 * 9, "Videomode              :%s", "MPAL ");
+                            break;
+                        default:
+                            ncfg.VideoMode &= ~NIN_VID_FORCE_MASK;
+                            ncfg.VideoMode |= NIN_VID_FORCE_NTSC;
+                            break;
+                    }
+                }
+
+                PrintFormat(MENU_POS_X + 30, 164 + 16 * PosX, ">");
+            }
+        }
+
+        VIDEO_WaitVSync();
+    }
+
+    memcpy(ncfg.GamePath, gi[PosX + ScrollX].Path + 3, strlen(gi[PosX + ScrollX].Path));
+
+    cfg = fopen("/nincfg.bin", "wb");
+
+    if (cfg != NULL) {
+        fwrite(&ncfg, sizeof(NIN_CFG), 1, cfg);
+        fclose(cfg);
+    }
+
+    for (i = 0; i < gamecount; ++i) {
+        free(gi[i].Name);
+        free(gi[i].Path);
+    }
 }

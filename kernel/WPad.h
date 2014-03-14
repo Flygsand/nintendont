@@ -15,5 +15,4 @@
 #define WPAD_BUTTON_Z                 0x2000
 #define WPAD_BUTTON_C                 0x4000
 #define WPAD_BUTTON_HOME              0x8000
-
 #endif

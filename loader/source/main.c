@@ -1,23 +1,23 @@
 /*
-
-Nintendont (Loader) - Playing Gamecubes in Wii mode on a Wii U
-
-Copyright (C) 2013  crediar
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation version 2.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-*/
+ *
+ * Nintendont (Loader) - Playing Gamecubes in Wii mode on a Wii U
+ *
+ * Copyright (C) 2013  crediar
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation version 2.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,361 +57,355 @@ extern void __exception_setreload(int t);
 
 static GXRModeObj *vmode = NULL;
 
-static const unsigned char Boot2Patch[] =
-{
-    0x48, 0x03, 0x49, 0x04, 0x47, 0x78, 0x46, 0xC0, 0xE6, 0x00, 0x08, 0x70, 0xE1, 0x2F, 0xFF, 0x1E, 
-    0x10, 0x10, 0x00, 0x00, 
+static const unsigned char Boot2Patch[] = {
+    0x48, 0x03, 0x49, 0x04, 0x47, 0x78, 0x46, 0xC0, 0xE6, 0x00, 0x08, 0x70, 0xE1, 0x2F, 0xFF, 0x1E,
+    0x10, 0x10, 0x00, 0x00,
 };
-static const unsigned char FSAccessPattern[] =
-{
-    0x9B, 0x05, 0x40, 0x03, 0x99, 0x05, 0x42, 0x8B, 
+static const unsigned char FSAccessPattern[] = {
+    0x9B, 0x05, 0x40, 0x03, 0x99, 0x05, 0x42, 0x8B,
 };
-static const unsigned char FSAccessPatch[] =
-{
-    0x9B, 0x05, 0x40, 0x03, 0x1C, 0x0B, 0x42, 0x8B, 
+static const unsigned char FSAccessPatch[] = {
+    0x9B, 0x05, 0x40, 0x03, 0x1C, 0x0B, 0x42, 0x8B,
 };
 
 s32 __IOS_LoadStartupIOS(void)
 {
-	int res;
+    int res;
 
-	res = __ES_Init();
-	if(res < 0)
-		return res;
+    res = __ES_Init();
 
-	return 0;
+    if (res < 0) {
+        return res;
+    }
+
+    return 0;
 }
 
 int main(int argc, char **argv)
-{	
-	void	(*entrypoint)();
-	
-	// Exit after 10 seconds if there is an error
-	__exception_setreload(10);
-	CheckForGecko();
+{
+    void    (*entrypoint)();
 
-	if( !IsWiiU() )
-	{
-		gprintf("Nintendont Loader\n");
-		gprintf("Built   : %s %s\n", __DATE__, __TIME__ );
-		gprintf("Version : %d.%d\n", VERSION>>16, VERSION&0xFFFF );	
-	}
+    // Exit after 10 seconds if there is an error
+    __exception_setreload(10);
+    CheckForGecko();
 
-	RAMInit();
+    if (!IsWiiU()) {
+        gprintf("Nintendont Loader\n");
+        gprintf("Built   : %s %s\n", __DATE__, __TIME__);
+        gprintf("Version : %d.%d\n", VERSION >> 16, VERSION & 0xFFFF);
+    }
 
-	STM_RegisterEventHandler(HandleSTMEvent);
+    RAMInit();
 
-	Initialise();
+    STM_RegisterEventHandler(HandleSTMEvent);
 
-	FPAD_Init();
+    Initialise();
 
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader %s         A: Start Game", IsWiiU() ? "(Wii U)" : "(Wii)  ");
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*2, "Built   : %s %s    B: Settings\n", __DATE__, __TIME__ );
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*3, "Firmware: %d.%d.%d\n", *(vu16*)0x80003140, *(vu8*)0x80003142, *(vu8*)0x80003143 );
-	
-	if( *(vu32*)(0xCd800064) != -1 )
-	{
-		ClearScreen();
-		gprintf("Please load Nintendont with AHBProt disabled!\n");
-		PrintFormat( 25, 232, "Please load Nintendont with AHBProt disabled!" );
-		sleep(10);
-		exit(1);
-	}
+    FPAD_Init();
 
-	if( IsWiiU() )
-	{
-		if( *(vu16*)0x80003140 != 58 || *(vu8*)0x80003142 != 25 || *(vu8*)0x80003143 != 32 )
-		{
-			ClearScreen();
-			gprintf("This version of IOS58 is not supported!\n");
-			PrintFormat( 25, 232, "This version of IOS58 is not supported!" );
-			sleep(10);
-			exit(1);
-		}
+    PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 1, "Nintendont Loader %s         A: Start Game", IsWiiU() ? "(Wii U)" : "(Wii)  ");
+    PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 2, "Built   : %s %s    B: Settings\n", __DATE__, __TIME__);
+    PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 3, "Firmware: %d.%d.%d\n", *(vu16 *) 0x80003140, *(vu8 *) 0x80003142, *(vu8 *) 0x80003143);
 
-	} else {
+    if (*(vu32 *) (0xCd800064) != -1) {
+        ClearScreen();
+        gprintf("Please load Nintendont with AHBProt disabled!\n");
+        PrintFormat(25, 232, "Please load Nintendont with AHBProt disabled!");
+        sleep(10);
+        exit(1);
+    }
 
-		if( *(vu16*)0x80003140 != 58 || *(vu8*)0x80003142 != 24 || *(vu8*)0x80003143 != 32 )
-		{
-			ClearScreen();
-			gprintf("This version of IOS58 is not supported!\n");
-			PrintFormat( 25, 232, "This version of IOS58 is not supported!" );
-			sleep(10);
-			exit(1);
-		}
-	}
-	
-	*(vu32*)(0xCD8B420A) = 0;	// Disable MEM2 protection
+    if (IsWiiU()) {
+        if (*(vu16 *) 0x80003140 != 58 || *(vu8 *) 0x80003142 != 25 || *(vu8 *) 0x80003143 != 32) {
+            ClearScreen();
+            gprintf("This version of IOS58 is not supported!\n");
+            PrintFormat(25, 232, "This version of IOS58 is not supported!");
+            sleep(10);
+            exit(1);
+        }
+    } else {
+        if (*(vu16 *) 0x80003140 != 58 || *(vu8 *) 0x80003142 != 24 || *(vu8 *) 0x80003143 != 32) {
+            ClearScreen();
+            gprintf("This version of IOS58 is not supported!\n");
+            PrintFormat(25, 232, "This version of IOS58 is not supported!");
+            sleep(10);
+            exit(1);
+        }
+    }
 
-//Patch FS access
+    *(vu32 *) (0xCD8B420A) = 0;   // Disable MEM2 protection
 
-	int u;
-	for( u = 0x93A00000; u < 0x94000000; u+=2 )
-	{
-		if( memcmp( (void*)(u), FSAccessPattern, sizeof(FSAccessPattern) ) == 0 )
-		{
-		//	gprintf("FSAccessPatch:%08X\n", u );
-			memcpy( (void*)u, FSAccessPatch, sizeof(FSAccessPatch) );
-		}
-	}
+    // Patch FS access
 
-	fatInitDefault();	
+    int u;
 
-	if( IsWiiU() )
-	{
-		gprintf("Built   : %s %s\n", __DATE__, __TIME__ );
-		gprintf("Version : %d.%d\n", VERSION>>16, VERSION&0xFFFF );	
-		gprintf("Firmware: %d.%d.%d\n", *(vu16*)0x80003140, *(vu8*)0x80003142, *(vu8*)0x80003143 );
-	}
-	
-	u32 KernelSize = 0;
-	u32 NKernelSize = 0;
-	char *Kernel = (char*)0x80100000;
+    for (u = 0x93A00000; u < 0x94000000; u += 2) {
+        if (memcmp((void *) (u), FSAccessPattern, sizeof(FSAccessPattern)) == 0) {
+            // gprintf("FSAccessPatch:%08X\n", u );
+            memcpy((void *) u, FSAccessPatch, sizeof(FSAccessPatch));
+        }
+    }
 
-	if( LoadKernel( Kernel, &KernelSize ) < 0 )
-	{
-		ClearScreen();
-		gprintf("Failed to load kernel from NAND!\n");
-		PrintFormat( 25, 232, "Failed to load kernel from NAND!" );
-		sleep(10);
-		exit(1);
-	}
+    fatInitDefault();
 
-	InsertModule( Kernel, KernelSize, (char*)kernel_bin, kernel_bin_size, (char*)0x90100000, &NKernelSize );
+    if (IsWiiU()) {
+        gprintf("Built   : %s %s\n", __DATE__, __TIME__);
+        gprintf("Version : %d.%d\n", VERSION >> 16, VERSION & 0xFFFF);
+        gprintf("Firmware: %d.%d.%d\n", *(vu16 *) 0x80003140, *(vu8 *) 0x80003142, *(vu8 *) 0x80003143);
+    }
 
-	DCFlushRange( (void*)0x90100000, NKernelSize );
+    u32 KernelSize = 0;
+    u32 NKernelSize = 0;
+    char *Kernel = (char *) 0x80100000;
 
-//Load config
+    if (LoadKernel(Kernel, &KernelSize) < 0) {
+        ClearScreen();
+        gprintf("Failed to load kernel from NAND!\n");
+        PrintFormat(25, 232, "Failed to load kernel from NAND!");
+        sleep(10);
+        exit(1);
+    }
 
-	u32 ConfigReset = 0;
+    InsertModule(Kernel, KernelSize, (char *) kernel_bin, kernel_bin_size, (char *) 0x90100000, &NKernelSize);
 
-	cfg = fopen("/nincfg.bin","rb+");
-	if( cfg == NULL )
-	{
-		ConfigReset = 1;
+    DCFlushRange((void *) 0x90100000, NKernelSize);
 
-	} else {
+    // Load config
 
-		if( fread( &ncfg, sizeof(NIN_CFG), 1, cfg ) != 1 )
-			ConfigReset = 1;
+    u32 ConfigReset = 0;
 
-		if( ncfg.Magicbytes != 0x01070CF6 )
-			ConfigReset = 1;
+    cfg = fopen("/nincfg.bin", "rb+");
 
-		if( ncfg.Version != NIN_CFG_VERSION )
-			ConfigReset = 1;
+    if (cfg == NULL) {
+        ConfigReset = 1;
+    } else {
+        if (fread(&ncfg, sizeof(NIN_CFG), 1, cfg) != 1) {
+            ConfigReset = 1;
+        }
 
-		fclose(cfg);
-	}
+        if (ncfg.Magicbytes != 0x01070CF6) {
+            ConfigReset = 1;
+        }
 
-	if( ConfigReset )
-	{
-		memset( &ncfg, 0, sizeof(NIN_CFG) );
-	
-		ncfg.Magicbytes	= 0x01070CF6;
-		ncfg.Version	= NIN_CFG_VERSION;
-		ncfg.Language	= NIN_LAN_AUTO;
-	}
-	
-//Reset drive
+        if (ncfg.Version != NIN_CFG_VERSION) {
+            ConfigReset = 1;
+        }
 
-	if( ncfg.Config & NIN_CFG_AUTO_BOOT )
-	{
-		gprintf("Autobooting:\"%s\"\n", ncfg.GamePath );
-	} else {
-		SelectGame();
-	}
+        fclose(cfg);
+    }
 
-	ClearScreen();
-	
+    if (ConfigReset) {
+        memset(&ncfg, 0, sizeof(NIN_CFG));
 
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*1, "Nintendont Loader (%s)", IsWiiU() ? "Wii U" : "Wii");
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*2, "Built   : %s %s\n", __DATE__, __TIME__ );
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*3, "Firmware: %d.%d.%d\n", *(vu16*)0x80003140, *(vu8*)0x80003142, *(vu8*)0x80003143 );
-	
-	WPAD_Disconnect(0);
-	WPAD_Disconnect(1);
-	WPAD_Disconnect(2);
-	WPAD_Disconnect(3);
+        ncfg.Magicbytes = 0x01070CF6;
+        ncfg.Version    = NIN_CFG_VERSION;
+        ncfg.Language   = NIN_LAN_AUTO;
+    }
 
-	WPAD_Shutdown();
-	
+    // Reset drive
 
-	DCInvalidateRange( (void*)0x939F02F0, 0x20 );
+    if (ncfg.Config & NIN_CFG_AUTO_BOOT) {
+        gprintf("Autobooting:\"%s\"\n", ncfg.GamePath);
+    } else {
+        SelectGame();
+    }
 
-	memcpy( (void*)0x939F02F0, Boot2Patch, sizeof(Boot2Patch) );
+    ClearScreen();
 
-	DCFlushRange( (void*)0x939F02F0, 0x20 );
 
-	s32 fd = IOS_Open( "/dev/es", 0 );
+    PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 1, "Nintendont Loader (%s)", IsWiiU() ? "Wii U" : "Wii");
+    PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 2, "Built   : %s %s\n", __DATE__, __TIME__);
+    PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 3, "Firmware: %d.%d.%d\n", *(vu16 *) 0x80003140, *(vu8 *) 0x80003142, *(vu8 *) 0x80003143);
 
-	u8 *buffer = (u8*)memalign( 32, 0x100 );
-	memset( buffer, 0, 0x100 );
+    WPAD_Disconnect(0);
+    WPAD_Disconnect(1);
+    WPAD_Disconnect(2);
+    WPAD_Disconnect(3);
 
-	memset( (void*)0x90004100, 0xFFFFFFFF, 0x20  );
-	DCFlushRange( (void*)0x90004100, 0x20 );
+    WPAD_Shutdown();
 
-	memset( (void*)0x91000000, 0xFFFFFFFF, 0x20  );
-	DCFlushRange( (void*)0x91000000, 0x20 );
 
-#ifdef DEBUG
-	gprintf("ES_ImportBoot():");
-#endif			
+    DCInvalidateRange((void *) 0x939F02F0, 0x20);
 
-	
-#ifdef DEBUG
-	u32 ret = IOS_IoctlvAsync( fd, 0x1F, 0, 0, (ioctlv*)buffer, NULL, NULL );
-	if( !IsWiiU() )
-	{
-		gprintf("%d\n", ret );
-		gprintf("Waiting ...\n");
-	}
-#else
-	IOS_IoctlvAsync( fd, 0x1F, 0, 0, (ioctlv*)buffer, NULL, NULL );
-#endif
+    memcpy((void *) 0x939F02F0, Boot2Patch, sizeof(Boot2Patch));
 
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*10, "Loading patched kernel ...\n");
-	while(1)
-	{
-		DCInvalidateRange( (void*)0x90004100, 0x20 );
-		if( *(vu32*)(0x90004100) == 0xdeadbeef )
-			break;
+    DCFlushRange((void *) 0x939F02F0, 0x20);
 
-		PrintFormat( MENU_POS_X, MENU_POS_Y + 20*10, "Loading patched kernel ... %d\n", *(vu32*)(0x90004100) );
-		
-		VIDEO_WaitVSync();
-	}
-	
-#ifdef DEBUG
-	if( !IsWiiU() )
-		gprintf("Nintendont at your service!\n");
-#endif
+    s32 fd = IOS_Open("/dev/es", 0);
 
-	PrintFormat( MENU_POS_X, MENU_POS_Y + 20*11, "Nintendont kernel running, loading game ...\n");
-//	memcpy( (void*)0x80000000, (void*)0x90140000, 0x1200000 );
+    u8 *buffer = (u8 *) memalign(32, 0x100);
+    memset(buffer, 0, 0x100);
 
-	entrypoint = (void*) LoadGame();
+    memset((void *) 0x90004100, 0xFFFFFFFF, 0x20);
+    DCFlushRange((void *) 0x90004100, 0x20);
 
-#ifdef DEBUG
-	gprintf("GameRegion:");
-#endif
+    memset((void *) 0x91000000, 0xFFFFFFFF, 0x20);
+    DCFlushRange((void *) 0x91000000, 0x20);
 
-	if( ncfg.VideoMode & NIN_VID_FORCE )
-	{
-#ifdef DEBUG
-		gprintf("Force:%u (%02X)\n", ncfg.VideoMode & NIN_VID_FORCE, ncfg.VideoMode & NIN_VID_FORCE_MASK );
-#endif
+    #ifdef DEBUG
+    gprintf("ES_ImportBoot():");
+    #endif
 
-		switch( ncfg.VideoMode & NIN_VID_FORCE_MASK )
-		{
-			case NIN_VID_FORCE_NTSC:
-			{
-				*(vu32*)0x800000CC = 0;
-				Region = 0;
-			} break;
-			case NIN_VID_FORCE_MPAL:
-			{
-				*(vu32*)0x800000CC = 3;
-				Region = 2;
-			} break;
-			case NIN_VID_FORCE_PAL50:
-			{
-				*(vu32*)0x800000CC = 1;
-				Region = 2;
-			} break;
-			case NIN_VID_FORCE_PAL60:
-			{
-				*(vu32*)0x800000CC = 5;
-				Region = 2;
-			} break;
-		}
-	}
-	
-#ifdef DEBUG
-	gprintf("Region:%u\n", Region );
-#endif
 
-	switch(Region)
-	{
-		default:
-		case 0:
-		case 1:
-		{
-#ifdef DEBUG
-			gprintf("NTSC\n");
-#endif
-			*(vu32*)0x800000CC = 0;
+    #ifdef DEBUG
+    u32 ret = IOS_IoctlvAsync(fd, 0x1F, 0, 0, (ioctlv *) buffer, NULL, NULL);
 
-			if( VIDEO_HaveComponentCable() )
-				vmode = &TVNtsc480Prog;
-			else
-				vmode = &TVNtsc480IntDf;
-			
-		} break;
-		case 2:
-		{
-			if( *(vu32*)0x800000CC == 5 )
-			{
-#ifdef DEBUG
-				gprintf("PAL60\n");
-#endif
-				if( VIDEO_HaveComponentCable() )
-					vmode = &TVEurgb60Hz480Prog;
-				else
-					vmode = &TVEurgb60Hz480IntDf;
+    if (!IsWiiU()) {
+        gprintf("%d\n", ret);
+        gprintf("Waiting ...\n");
+    }
 
-			} else if( *(vu32*)0x800000CC == 3 ) {
-#ifdef DEBUG
-				gprintf("MPAL\n");
-#endif
-				if( VIDEO_HaveComponentCable() )
-					vmode = &TVEurgb60Hz480Prog;
-				else
-					vmode = &TVMpal480IntDf;
-			} else {
-				
-#ifdef DEBUG
-				gprintf("PAL50\n");
-#endif
-				if( VIDEO_HaveComponentCable() )
-					vmode = &TVEurgb60Hz480Prog;
-				else
-					vmode = &TVPal528IntDf;
-			}
+    #else
+    IOS_IoctlvAsync(fd, 0x1F, 0, 0, (ioctlv *) buffer, NULL, NULL);
+    #endif
 
-			*(vu32*)0x800000CC = 1;
+    PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 10, "Loading patched kernel ...\n");
 
-		} break;
-	}
+    while (1) {
+        DCInvalidateRange((void *) 0x90004100, 0x20);
 
-	VIDEO_Configure( vmode );
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
+        if (*(vu32 *) (0x90004100) == 0xdeadbeef) {
+            break;
+        }
 
-	ClearScreen();
+        PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 10, "Loading patched kernel ... %d\n", *(vu32 *) (0x90004100));
 
-	VIDEO_WaitVSync();
-	
-	*(u16*)(0xCC00501A) = 156;	// DSP refresh rate
-	
-	VIDEO_SetBlack(TRUE);
+        VIDEO_WaitVSync();
+    }
 
-	VIDEO_Flush();
+    #ifdef DEBUG
+    if (!IsWiiU()) {
+        gprintf("Nintendont at your service!\n");
+    }
+    #endif
 
-	settime(secs_to_ticks(time(NULL) - 927466348));
+    PrintFormat(MENU_POS_X, MENU_POS_Y + 20 * 11, "Nintendont kernel running, loading game ...\n");
+    // memcpy( (void*)0x80000000, (void*)0x90140000, 0x1200000 );
 
-	IRQ_Disable();
-				
-	ICFlashInvalidate();
-	
-#ifdef DEBUG
-	if( !IsWiiU() )
-		gprintf("entrypoint(0x%08X)\n", entrypoint );
-#endif
+    entrypoint = (void *) LoadGame();
 
-	entrypoint();
-	while(1);
+    #ifdef DEBUG
+    gprintf("GameRegion:");
+    #endif
 
-	return 0;
+    if (ncfg.VideoMode & NIN_VID_FORCE) {
+        #ifdef DEBUG
+        gprintf("Force:%u (%02X)\n", ncfg.VideoMode & NIN_VID_FORCE, ncfg.VideoMode & NIN_VID_FORCE_MASK);
+        #endif
+
+        switch (ncfg.VideoMode & NIN_VID_FORCE_MASK) {
+            case NIN_VID_FORCE_NTSC: {
+                *(vu32 *) 0x800000CC = 0;
+                Region = 0;
+            }
+            break;
+            case NIN_VID_FORCE_MPAL: {
+                *(vu32 *) 0x800000CC = 3;
+                Region = 2;
+            }
+            break;
+            case NIN_VID_FORCE_PAL50: {
+                *(vu32 *) 0x800000CC = 1;
+                Region = 2;
+            }
+            break;
+            case NIN_VID_FORCE_PAL60: {
+                *(vu32 *) 0x800000CC = 5;
+                Region = 2;
+            }
+            break;
+        }
+    }
+
+    #ifdef DEBUG
+    gprintf("Region:%u\n", Region);
+    #endif
+
+    switch (Region) {
+        default:
+        case 0:
+        case 1: {
+            #ifdef DEBUG
+            gprintf("NTSC\n");
+            #endif
+            *(vu32 *) 0x800000CC = 0;
+
+            if (VIDEO_HaveComponentCable()) {
+                vmode = &TVNtsc480Prog;
+            } else {
+                vmode = &TVNtsc480IntDf;
+            }
+        }
+        break;
+        case 2: {
+            if (*(vu32 *) 0x800000CC == 5) {
+                #ifdef DEBUG
+                gprintf("PAL60\n");
+                #endif
+
+                if (VIDEO_HaveComponentCable()) {
+                    vmode = &TVEurgb60Hz480Prog;
+                } else {
+                    vmode = &TVEurgb60Hz480IntDf;
+                }
+            } else if (*(vu32 *) 0x800000CC == 3) {
+                #ifdef DEBUG
+                gprintf("MPAL\n");
+                #endif
+
+                if (VIDEO_HaveComponentCable()) {
+                    vmode = &TVEurgb60Hz480Prog;
+                } else {
+                    vmode = &TVMpal480IntDf;
+                }
+            } else {
+                #ifdef DEBUG
+                gprintf("PAL50\n");
+                #endif
+
+                if (VIDEO_HaveComponentCable()) {
+                    vmode = &TVEurgb60Hz480Prog;
+                } else {
+                    vmode = &TVPal528IntDf;
+                }
+            }
+
+            *(vu32 *) 0x800000CC = 1;
+        }
+        break;
+    }
+
+    VIDEO_Configure(vmode);
+    VIDEO_Flush();
+    VIDEO_WaitVSync();
+
+    ClearScreen();
+
+    VIDEO_WaitVSync();
+
+    *(u16 *) (0xCC00501A) = 156;  // DSP refresh rate
+
+    VIDEO_SetBlack(TRUE);
+
+    VIDEO_Flush();
+
+    settime(secs_to_ticks(time(NULL) - 927466348));
+
+    IRQ_Disable();
+
+    ICFlashInvalidate();
+
+    #ifdef DEBUG
+    if (!IsWiiU()) {
+        gprintf("entrypoint(0x%08X)\n", entrypoint);
+    }
+    #endif
+
+    entrypoint();
+
+    while (1) {
+        ;
+    }
+
+    return 0;
 }
-

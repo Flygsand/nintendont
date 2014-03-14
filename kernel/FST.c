@@ -1,23 +1,23 @@
 /*
-
-Nintendont (Kernel) - Playing Gamecubes in Wii mode on a Wii U
-
-Copyright (C) 2013  crediar
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation version 2.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-*/
+ *
+ * Nintendont (Kernel) - Playing Gamecubes in Wii mode on a Wii U
+ *
+ * Copyright (C) 2013  crediar
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation version 2.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
 #include "FST.h"
 #include "ff.h"
 #include "common.h"
@@ -27,290 +27,277 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #ifndef DEBUG_DI
 #define dbgprintf(...)
 #else
-extern int dbgprintf( const char *fmt, ...);
+extern int dbgprintf(const char *fmt, ...);
 #endif
 
-static u8 *FSTable ALIGNED(32);
-u32 ApploaderSize=0;
-u32 dolOffset=0;
+static u8 * FSTable ALIGNED(32);
+u32 ApploaderSize = 0;
+u32 dolOffset = 0;
 u32 FSTMode = 0;
-u32 FSTableSize=0;
-u32 FSTableOffset=0;
+u32 FSTableSize = 0;
+u32 FSTableOffset = 0;
 
-u32 FCEntry=0;
+u32 FCEntry = 0;
 FileCache *FC;
 u32 FCState[FILECACHE_MAX];
 
 extern u32 Region;
 
-u32 FSTInit( char *GamePath )
+u32 FSTInit(char *GamePath)
 {
-	char Path[256];
-	FIL fd;
-	u32 read;
-	
-	_sprintf( Path, "%ssys/boot.bin", GamePath );
-	if( f_open( &fd, Path, FA_READ ) != FR_OK )
-	{
-		dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-		return 0;
+    char Path[256];
+    FIL fd;
+    u32 read;
 
-	} else {
+    _sprintf(Path, "%ssys/boot.bin", GamePath);
 
-		u8 *rbuf = (u8*)malloc( 0x100 );
-		
-		f_lseek( &fd, 0 );
-		f_read( &fd, rbuf, 0x100, &read );
+    if (f_open(&fd, Path, FA_READ) != FR_OK) {
+        dbgprintf("DIP:[%s] Failed to open!\n", Path);
+        return 0;
+    } else {
+        u8 *rbuf = (u8 *) malloc(0x100);
 
-		dbgprintf("DIP:Loading game %.6s: %s\n", rbuf, (char *)(rbuf+0x20));
+        f_lseek(&fd, 0);
+        f_read(&fd, rbuf, 0x100, &read);
 
-		//Read DOL/FST offset/sizes for later usage
-		f_lseek( &fd, 0x0420 );
-		f_read( &fd, rbuf, 0x20, &read );
+        dbgprintf("DIP:Loading game %.6s: %s\n", rbuf, (char *) (rbuf + 0x20));
 
-		dolOffset		= *(u32*)(rbuf);
-		FSTableOffset	= *(u32*)(rbuf+4);
-		FSTableSize		= *(u32*)(rbuf+8);
+        // Read DOL/FST offset/sizes for later usage
+        f_lseek(&fd, 0x0420);
+        f_read(&fd, rbuf, 0x20, &read);
 
-		free( rbuf );
-		
-		dbgprintf( "DIP:FSTableOffset:%08X\n", FSTableOffset );
-		dbgprintf( "DIP:FSTableSize:  %08X\n", FSTableSize );
-		dbgprintf( "DIP:DolOffset:    %08X\n", dolOffset );	
+        dolOffset       = *(u32 *) (rbuf);
+        FSTableOffset   = *(u32 *) (rbuf + 4);
+        FSTableSize     = *(u32 *) (rbuf + 8);
 
-		FSTMode = 1;
+        free(rbuf);
 
-		FC = (FileCache*)malloc( sizeof(FileCache) * FILECACHE_MAX );
+        dbgprintf("DIP:FSTableOffset:%08X\n", FSTableOffset);
+        dbgprintf("DIP:FSTableSize:  %08X\n", FSTableSize);
+        dbgprintf("DIP:DolOffset:    %08X\n", dolOffset);
 
-		f_close( &fd );
-	}
+        FSTMode = 1;
 
-	//Init cache
-	u32 count = 0;
-	for( count=0; count < FILECACHE_MAX; ++count )
-	{
-		FCState[count] = 0xdeadbeef;
-	}
+        FC = (FileCache *) malloc(sizeof(FileCache) * FILECACHE_MAX);
 
-	return 1;
+        f_close(&fd);
+    }
+
+    // Init cache
+    u32 count = 0;
+
+    for (count = 0; count < FILECACHE_MAX; ++count) {
+        FCState[count] = 0xdeadbeef;
+    }
+
+    return 1;
 }
-void FSTRead( char *GamePath, char *Buffer, u32 Length, u32 Offset )
+
+void FSTRead(char *GamePath, char *Buffer, u32 Length, u32 Offset)
 {
-	char Path[256];
-	FIL fd;
-	u32 read;
-	int i,j;
-	
-	if( Offset >= FSTableOffset+FSTableSize ) {
-				
-		//Get FSTTable offset from low memory, must be set by apploader
-		if( FSTable == NULL )
-		{
-			FSTable	= (u8*)((*(vu32*)0x38) & 0x7FFFFFFF);
-			//dbgprintf("DIP:FSTOffset:  %08X\n", (u32)FSTable );
-		}
-		
-		//try cache first!
-		for( i=0; i < FILECACHE_MAX; ++i )
-		{
-			if( FCState[i] == 0xdeadbeef )
-				continue;
+    char Path[256];
+    FIL fd;
+    u32 read;
+    int i, j;
 
-			if( Offset >= FC[i].Offset )
-			{
-				u64 nOffset = Offset - FC[i].Offset;
-				if( nOffset < FC[i].Size )
-				{
-					//dbgprintf("DIP:[Cache:%02d][%08X:%05X]\n", i, (u32)(nOffset>>2), Length );
-					f_lseek( &(FC[i].File), nOffset );
-					f_read( &(FC[i].File), Buffer, ((Length)+31)&(~31), &read );
-					return;
-				}
-			}
-		}
+    if (Offset >= FSTableOffset + FSTableSize) {
+        // Get FSTTable offset from low memory, must be set by apploader
+        if (FSTable == NULL) {
+            FSTable = (u8 *) ((*(vu32 *) 0x38) & 0x7FFFFFFF);
+            // dbgprintf("DIP:FSTOffset:  %08X\n", (u32)FSTable );
+        }
 
-		//The fun part!
+        // try cache first!
+        for (i = 0; i < FILECACHE_MAX; ++i) {
+            if (FCState[i] == 0xdeadbeef) {
+                continue;
+            }
 
-		u32 Entries = *(u32*)(FSTable+0x08);
-		char *NameOff = (char*)(FSTable + Entries * 0x0C);
-		FEntry *fe = (FEntry*)(FSTable);
+            if (Offset >= FC[i].Offset) {
+                u64 nOffset = Offset - FC[i].Offset;
 
-		u32 Entry[16];
-		u32 LEntry[16];
-		u32 level=0;
+                if (nOffset < FC[i].Size) {
+                    // dbgprintf("DIP:[Cache:%02d][%08X:%05X]\n", i, (u32)(nOffset>>2), Length );
+                    f_lseek(&(FC[i].File), nOffset);
+                    f_read(&(FC[i].File), Buffer, ((Length) + 31) & (~31), &read);
+                    return;
+                }
+            }
+        }
 
-		for( i=1; i < Entries; ++i )
-		{
-			if( level )
-			{
-				while( LEntry[level-1] == i )
-				{
-					//printf("[%03X]leaving :\"%s\" Level:%d\n", i, buffer + NameOff + swap24( fe[Entry[level-1]].NameOffset ), level );
-					level--;
-				}
-			}
+        // The fun part!
 
-			if( fe[i].Type )
-			{
-				//Skip empty folders
-				if( fe[i].NextOffset == i+1 )
-					continue;
+        u32 Entries = *(u32 *) (FSTable + 0x08);
+        char *NameOff = (char *) (FSTable + Entries * 0x0C);
+        FEntry *fe = (FEntry *) (FSTable);
 
-				//printf("[%03X]Entering:\"%s\" Level:%d leave:%04X\n", i, buffer + NameOff + swap24( fe[i].NameOffset ), level, swap32( fe[i].NextOffset ) );
-				Entry[level] = i;
-				LEntry[level++] = fe[i].NextOffset;
-				if( level > 15 )	// something is wrong!
-					break;
-			} else {
+        u32 Entry[16];
+        u32 LEntry[16];
+        u32 level = 0;
 
-				if( Offset >= fe[i].FileOffset )
-				{
-					u32 nOffset = (Offset - fe[i].FileOffset);
-					if( nOffset < fe[i].FileLength )
-					{
-					//	dbgprintf("DIP:Offset:%08X FOffset:%08X Dif:%08X Flen:%08X nOffset:%08X\n", Offset, fe[i].FileOffset, Offset-fe[i].FileOffset, fe[i].FileLength, nOffset );
+        for (i = 1; i < Entries; ++i) {
+            if (level) {
+                while (LEntry[level - 1] == i) {
+                    // printf("[%03X]leaving :\"%s\" Level:%d\n", i, buffer + NameOff + swap24( fe[Entry[level-1]].NameOffset ), level );
+                    level--;
+                }
+            }
 
-						//Do not remove!
-						memset32( Path, 0, 256 );					
-						_sprintf( Path, "%sroot/", GamePath );
+            if (fe[i].Type) {
+                // Skip empty folders
+                if (fe[i].NextOffset == i + 1) {
+                    continue;
+                }
 
-						for( j=0; j<level; ++j )
-						{
-							if( j )
-								Path[strlen(Path)] = '/';
-							memcpy( Path+strlen(Path), NameOff + fe[Entry[j]].NameOffset, strlen(NameOff + fe[Entry[j]].NameOffset ) );
-						}
-						if( level )
-							Path[strlen(Path)] = '/';
-						memcpy( Path+strlen(Path), NameOff + fe[i].NameOffset, strlen(NameOff + fe[i].NameOffset) );
-						
-						if( FCEntry >= FILECACHE_MAX )
-							FCEntry = 0;
+                // printf("[%03X]Entering:\"%s\" Level:%d leave:%04X\n", i, buffer + NameOff + swap24( fe[i].NameOffset ), level, swap32( fe[i].NextOffset ) );
+                Entry[level] = i;
+                LEntry[level++] = fe[i].NextOffset;
 
-						if( FCState[FCEntry] != 0xdeadbeef )
-						{
-							f_close( &(FC[FCEntry].File) );
-							FCState[FCEntry] = 0xdeadbeef;
-						}
+                if (level > 15) {   // something is wrong!
+                    break;
+                }
+            } else {
+                if (Offset >= fe[i].FileOffset) {
+                    u32 nOffset = (Offset - fe[i].FileOffset);
 
-						Asciify( Path );
+                    if (nOffset < fe[i].FileLength) {
+                        // dbgprintf("DIP:Offset:%08X FOffset:%08X Dif:%08X Flen:%08X nOffset:%08X\n", Offset, fe[i].FileOffset, Offset-fe[i].FileOffset, fe[i].FileLength, nOffset );
 
-					//	dbgprintf("DIP:[%s]\n", Path+strlen(GamePath)+5 );
+                        // Do not remove!
+                        memset32(Path, 0, 256);
+                        _sprintf(Path, "%sroot/", GamePath);
 
-						f_open( &(FC[FCEntry].File), Path, FA_READ );
+                        for (j = 0; j < level; ++j) {
+                            if (j) {
+                                Path[strlen(Path)] = '/';
+                            }
 
-						FC[FCEntry].Size	= fe[i].FileLength;
-						FC[FCEntry].Offset	= fe[i].FileOffset;
-						FCState[FCEntry]	= 0x23;
+                            memcpy(Path + strlen(Path), NameOff + fe[Entry[j]].NameOffset, strlen(NameOff + fe[Entry[j]].NameOffset));
+                        }
 
-						f_lseek( &(FC[FCEntry].File), nOffset );
-						f_read( &(FC[FCEntry].File), Buffer, Length, &read );
+                        if (level) {
+                            Path[strlen(Path)] = '/';
+                        }
 
-						FCEntry++;
-					}
-				}
-			}
-		}
+                        memcpy(Path + strlen(Path), NameOff + fe[i].NameOffset, strlen(NameOff + fe[i].NameOffset));
 
-	} else if ( Offset >= FSTableOffset ) {
-		
-		Offset -= FSTableOffset;
-		
-		_sprintf( Path, "%ssys/fst.bin", GamePath );
-		if( f_open( &fd, Path, FA_READ ) != FR_OK )
-		{
-			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-			return;
-		} else {
-			//dbgprintf( "DIP:[fst.bin] Offset:%08X Size:%08X\n", Offset, Length );
-			
-			f_lseek( &fd, Offset );
-			f_read( &fd, Buffer, Length, &read );
-			f_close( &fd );
-						
-			if( FSTable == NULL )
-			{
-				FSTable	= (u8*)Buffer;
-			}
+                        if (FCEntry >= FILECACHE_MAX) {
+                            FCEntry = 0;
+                        }
 
-			return;
-		}
+                        if (FCState[FCEntry] != 0xdeadbeef) {
+                            f_close(&(FC[FCEntry].File));
+                            FCState[FCEntry] = 0xdeadbeef;
+                        }
 
-	} else if ( Offset >= dolOffset ) {
-		
-		Offset -= dolOffset;
-		
-		_sprintf( Path, "%ssys/main.dol", GamePath );
-		if( f_open( &fd, Path, FA_READ ) != FR_OK )
-		{
-			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-			return;
-		} else {
-			//dbgprintf( "DIP:[main.dol] Offset:%08X Size:%08X\n", Offset, Length );
-			
-			f_lseek( &fd, Offset );
-			f_read( &fd, Buffer, Length, &read );
-			f_close( &fd );
+                        Asciify(Path);
 
-			return;
-		}
+                        // dbgprintf("DIP:[%s]\n", Path+strlen(GamePath)+5 );
 
-	} else if ( Offset >= 0x2440 ) {
-		
-		Offset -= 0x2440;
-		
-		_sprintf( Path, "%ssys/apploader.img", GamePath );
-		if( f_open( &fd, Path, FA_READ ) != FR_OK )
-		{
-			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-			return;
-		} else {
-			//dbgprintf( "DIP:[apploader.img] Offset:%08X Size:%08X\n", Offset, Length );
-			
-			f_lseek( &fd, Offset );
-			f_read( &fd, Buffer, Length, &read );
-			f_close( &fd );
+                        f_open(&(FC[FCEntry].File), Path, FA_READ);
 
-			return;
-		}
+                        FC[FCEntry].Size    = fe[i].FileLength;
+                        FC[FCEntry].Offset  = fe[i].FileOffset;
+                        FCState[FCEntry]    = 0x23;
 
-	} else if ( Offset >= 0x440 ) {
+                        f_lseek(&(FC[FCEntry].File), nOffset);
+                        f_read(&(FC[FCEntry].File), Buffer, Length, &read);
 
-		Offset -= 0x440;
-		
-		_sprintf( Path, "%ssys/bi2.bin", GamePath );
-		if( f_open( &fd, Path, FA_READ ) != FR_OK )
-		{
-			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-			return;
-		} else {
-			//dbgprintf( "DIP:[bi2.bin] Offset:%08X Size:%08X\n", Offset, Length );
-			
-			f_lseek( &fd, Offset );
-			f_read( &fd, Buffer, Length, &read );
+                        FCEntry++;
+                    }
+                }
+            }
+        }
+    } else if (Offset >= FSTableOffset) {
+        Offset -= FSTableOffset;
 
-			f_close( &fd );
+        _sprintf(Path, "%ssys/fst.bin", GamePath);
 
-			Region = *(vu32*)(Buffer+0x18);
+        if (f_open(&fd, Path, FA_READ) != FR_OK) {
+            dbgprintf("DIP:[%s] Failed to open!\n", Path);
+            return;
+        } else {
+            // dbgprintf( "DIP:[fst.bin] Offset:%08X Size:%08X\n", Offset, Length );
 
-			return;
-		}
+            f_lseek(&fd, Offset);
+            f_read(&fd, Buffer, Length, &read);
+            f_close(&fd);
 
-	} else {
-		_sprintf( Path, "%ssys/boot.bin", GamePath );
-		if( f_open( &fd, Path, FA_READ ) != FR_OK )
-		{
-			dbgprintf( "DIP:[%s] Failed to open!\n", Path );
-			return;
-		} else {
-			//dbgprintf( "DIP:[boot.bin] Offset:%08X Size:%08X\n", Offset, Length );
-			
-			f_lseek( &fd, Offset );
-			f_read( &fd, Buffer, Length, &read );
+            if (FSTable == NULL) {
+                FSTable = (u8 *) Buffer;
+            }
 
-			f_close( &fd );
+            return;
+        }
+    } else if (Offset >= dolOffset) {
+        Offset -= dolOffset;
 
-			return;
-		}
-	}
+        _sprintf(Path, "%ssys/main.dol", GamePath);
+
+        if (f_open(&fd, Path, FA_READ) != FR_OK) {
+            dbgprintf("DIP:[%s] Failed to open!\n", Path);
+            return;
+        } else {
+            // dbgprintf( "DIP:[main.dol] Offset:%08X Size:%08X\n", Offset, Length );
+
+            f_lseek(&fd, Offset);
+            f_read(&fd, Buffer, Length, &read);
+            f_close(&fd);
+
+            return;
+        }
+    } else if (Offset >= 0x2440) {
+        Offset -= 0x2440;
+
+        _sprintf(Path, "%ssys/apploader.img", GamePath);
+
+        if (f_open(&fd, Path, FA_READ) != FR_OK) {
+            dbgprintf("DIP:[%s] Failed to open!\n", Path);
+            return;
+        } else {
+            // dbgprintf( "DIP:[apploader.img] Offset:%08X Size:%08X\n", Offset, Length );
+
+            f_lseek(&fd, Offset);
+            f_read(&fd, Buffer, Length, &read);
+            f_close(&fd);
+
+            return;
+        }
+    } else if (Offset >= 0x440) {
+        Offset -= 0x440;
+
+        _sprintf(Path, "%ssys/bi2.bin", GamePath);
+
+        if (f_open(&fd, Path, FA_READ) != FR_OK) {
+            dbgprintf("DIP:[%s] Failed to open!\n", Path);
+            return;
+        } else {
+            // dbgprintf( "DIP:[bi2.bin] Offset:%08X Size:%08X\n", Offset, Length );
+
+            f_lseek(&fd, Offset);
+            f_read(&fd, Buffer, Length, &read);
+
+            f_close(&fd);
+
+            Region = *(vu32 *) (Buffer + 0x18);
+
+            return;
+        }
+    } else {
+        _sprintf(Path, "%ssys/boot.bin", GamePath);
+
+        if (f_open(&fd, Path, FA_READ) != FR_OK) {
+            dbgprintf("DIP:[%s] Failed to open!\n", Path);
+            return;
+        } else {
+            // dbgprintf( "DIP:[boot.bin] Offset:%08X Size:%08X\n", Offset, Length );
+
+            f_lseek(&fd, Offset);
+            f_read(&fd, Buffer, Length, &read);
+
+            f_close(&fd);
+
+            return;
+        }
+    }
 }
