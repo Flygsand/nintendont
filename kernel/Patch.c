@@ -1,4 +1,4 @@
-﻿/*
+/*
 
 Nintendont (Kernel) - Playing Gamecubes in Wii mode on a Wii U
 

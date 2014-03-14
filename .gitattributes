@@ -1,0 +1,9 @@
+* text=auto
+
+*.c text
+*.h text
+*.s text
+*.S text
+*.xml text
+
+*.png binary
